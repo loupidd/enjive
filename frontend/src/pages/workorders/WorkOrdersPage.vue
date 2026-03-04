@@ -7,15 +7,6 @@
         <h2 class="text-xl font-bold text-white tracking-tight">Task</h2>
         <div class="accent-bar mt-1.5"/>
       </div>
-      <!-- KPI strip -->
-      <div class="flex items-center gap-3">
-        <div v-for="kpi in kpis" :key="kpi.label"
-          class="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
-          :class="kpi.border">
-          <span class="text-lg font-bold" :class="kpi.color">{{ kpi.value }}</span>
-          <span class="text-xs text-denim-200/50 leading-tight">{{ kpi.label }}</span>
-        </div>
-      </div>
     </div>
 
     <!-- ── Pipeline visual (status flow) ───────────────────── -->
@@ -39,19 +30,28 @@
       </div>
     </div>
 
-    <!-- ── Filters ──────────────────────────────────────────── -->
+    <!-- ── Filters + KPI on same row ──────────────────────── -->
     <div class="card p-0 overflow-hidden">
-      <button class="w-full flex items-center justify-between px-4 py-3 hover:bg-denim-700/10 transition-colors" @click="showFilters=!showFilters">
+      <button class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-denim-700/10 transition-colors" @click="showFilters=!showFilters">
         <div class="flex items-center gap-2">
           <IconFilter :size="13" class="text-caramel/60"/>
           <span class="text-xs font-semibold text-denim-200/70 uppercase tracking-wide">Filters</span>
           <span v-if="activeFilterCount > 0" class="text-[10px] bg-caramel/20 text-caramel px-1.5 py-0.5 rounded-full font-bold">{{ activeFilterCount }} active</span>
         </div>
-        <IconChevronDown :size="14" class="text-denim-200/40 transition-transform duration-200" :class="showFilters?'rotate-180':''"/>
+        <!-- KPI badges inline with filter header -->
+        <div class="flex items-center gap-2 mr-2">
+          <div v-for="kpi in kpis" :key="kpi.label"
+            class="flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs"
+            :class="kpi.border">
+            <span class="font-bold" :class="kpi.color">{{ kpi.value }}</span>
+            <span class="text-denim-200/40 hidden sm:inline">{{ kpi.label }}</span>
+          </div>
+        </div>
+        <IconChevronDown :size="14" class="text-denim-200/40 transition-transform duration-200 shrink-0" :class="showFilters?'rotate-180':''"/>
       </button>
       <Transition name="collapse">
       <div v-if="showFilters" class="border-t border-denim-700/30 px-4 pb-4 pt-3">
-      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+      <div class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2 w-full">
         <div class="col-span-1">
           <label class="label">Start Date</label>
           <input v-model="filters.startDate" type="date" class="input text-xs"/>

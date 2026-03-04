@@ -78,3 +78,106 @@
     @apply h-0.5 w-8 bg-caramel rounded-full;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMATIONS & ENTRANCE EFFECTS
+══════════════════════════════════════════════════════════════ */
+
+/* Staggered card entrance */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* Apply to cards — staggered via nth-child */
+.card {
+  animation: fadeSlideUp 0.22s ease both;
+}
+
+/* Stagger each card in a grid */
+.space-y-4 > .card:nth-child(1),
+.grid > .card:nth-child(1) { animation-delay: 0.03s; }
+.space-y-4 > .card:nth-child(2),
+.grid > .card:nth-child(2) { animation-delay: 0.07s; }
+.space-y-4 > .card:nth-child(3),
+.grid > .card:nth-child(3) { animation-delay: 0.11s; }
+.space-y-4 > .card:nth-child(4),
+.grid > .card:nth-child(4) { animation-delay: 0.14s; }
+.space-y-4 > .card:nth-child(5),
+.grid > .card:nth-child(5) { animation-delay: 0.17s; }
+.space-y-4 > .card:nth-child(6),
+.grid > .card:nth-child(6) { animation-delay: 0.20s; }
+
+/* Subtle hover lift on cards */
+.card {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.card:hover {
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+}
+
+/* Table row entrance */
+tbody tr {
+  animation: fadeIn 0.15s ease both;
+}
+tbody tr:nth-child(1)  { animation-delay: 0.04s; }
+tbody tr:nth-child(2)  { animation-delay: 0.07s; }
+tbody tr:nth-child(3)  { animation-delay: 0.10s; }
+tbody tr:nth-child(4)  { animation-delay: 0.13s; }
+tbody tr:nth-child(5)  { animation-delay: 0.15s; }
+tbody tr:nth-child(6)  { animation-delay: 0.17s; }
+tbody tr:nth-child(7)  { animation-delay: 0.19s; }
+tbody tr:nth-child(8)  { animation-delay: 0.21s; }
+
+/* KPI card number shimmer on load */
+@keyframes countIn {
+  from { opacity:0; transform: scale(0.8); }
+  to   { opacity:1; transform: scale(1); }
+}
+.kpi-value {
+  animation: countIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Active nav shimmer effect */
+.nav-item.router-link-active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,198,119,0.06) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease infinite;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Button press */
+.btn-primary:active  { transform: scale(0.97); }
+.btn-secondary:active { transform: scale(0.97); }
+.btn-danger:active   { transform: scale(0.97); }
+
+/* Smooth focus ring */
+*:focus-visible {
+  outline: 2px solid rgba(255, 198, 119, 0.5);
+  outline-offset: 2px;
+}
+
+/* Scrollbar refinement */
+::-webkit-scrollbar       { width: 3px; height: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }

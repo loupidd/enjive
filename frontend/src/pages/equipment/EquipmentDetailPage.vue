@@ -96,10 +96,37 @@
       </div>
     </div>
 
+    <!-- ── Technical Specs — top collapsible ───────────────── -->
+    <div class="card p-0 overflow-hidden">
+      <button
+        class="w-full flex items-center justify-between px-4 py-3 hover:bg-denim-700/10 transition-colors"
+        @click="showSpecs=!showSpecs"
+      >
+        <div class="flex items-center gap-2">
+          <IconSliders :size="13" class="text-caramel/60"/>
+          <span class="text-xs font-semibold text-denim-200/70 uppercase tracking-wide">Technical Specifications</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-[10px] text-denim-200/30">{{ showSpecs ? "Collapse" : "Expand" }}</span>
+          <IconChevronDown :size="14" class="text-denim-200/40 transition-transform duration-200" :class="showSpecs?'rotate-180':''"/>
+        </div>
+      </button>
+      <Transition name="collapse">
+        <div v-if="showSpecs" class="border-t border-denim-700/20 px-4 py-3">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-x-6 gap-y-2">
+            <div v-for="row in specRows" :key="row.label">
+              <p class="text-[10px] text-denim-200/35 leading-none mb-0.5">{{ row.label }}</p>
+              <p class="text-xs font-medium text-white">{{ row.value || "—" }}</p>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </div>
+
     <!-- ── Main 2-col layout ───────────────────────────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
-      <!-- LEFT: Photo + Map + Quick specs -->
+      <!-- LEFT: Photo + Map -->
       <div class="lg:col-span-2 space-y-4">
 
         <!-- Photo -->
@@ -118,7 +145,6 @@
         <!-- Map -->
         <div class="card p-0 overflow-hidden">
           <div class="aspect-video bg-denim-900/60 relative overflow-hidden">
-            <!-- Grid texture -->
             <svg class="absolute inset-0 w-full h-full opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
               <defs><pattern id="g" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#FFC677" stroke-width="0.5"/></pattern></defs>
               <rect width="100%" height="100%" fill="url(#g)"/>
@@ -139,28 +165,6 @@
               Open Map <IconExternalLink :size="9"/>
             </button>
           </div>
-        </div>
-
-        <!-- Technical specs (collapsible) -->
-        <div class="card p-0 overflow-hidden">
-          <button
-            class="w-full flex items-center justify-between px-4 py-3 border-b border-denim-700/30 hover:bg-denim-700/10 transition-colors"
-            @click="showSpecs=!showSpecs"
-          >
-            <div class="flex items-center gap-2">
-              <IconSliders :size="13" class="text-caramel/60"/>
-              <span class="text-xs font-semibold text-denim-200/70 uppercase tracking-wide">Technical Specs</span>
-            </div>
-            <IconChevronDown :size="14" class="text-denim-200/40 transition-transform duration-200" :class="showSpecs?'rotate-180':''"/>
-          </button>
-          <Transition name="collapse">
-            <div v-if="showSpecs" class="divide-y divide-denim-700/20">
-              <div v-for="row in specRows" :key="row.label" class="flex px-4 py-2 gap-2">
-                <span class="text-[11px] text-denim-200/40 w-28 shrink-0">{{ row.label }}</span>
-                <span class="text-[11px] text-white font-medium">{{ row.value || "—" }}</span>
-              </div>
-            </div>
-          </Transition>
         </div>
       </div>
 
@@ -320,21 +324,13 @@
               <button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-denim-200/50" @click="showQR=false"><IconX :size="14"/></button>
             </div>
             <div class="p-6">
-              <div class="w-40 h-40 mx-auto bg-white rounded-xl p-3 mb-4">
-                <svg viewBox="0 0 21 21" class="w-full h-full">
-                  <rect x="0" y="0" width="7" height="7" fill="none" stroke="black" stroke-width="1"/><rect x="1" y="1" width="5" height="5" fill="black"/>
-                  <rect x="14" y="0" width="7" height="7" fill="none" stroke="black" stroke-width="1"/><rect x="15" y="1" width="5" height="5" fill="black"/>
-                  <rect x="0" y="14" width="7" height="7" fill="none" stroke="black" stroke-width="1"/><rect x="1" y="15" width="5" height="5" fill="black"/>
-                  <rect x="9" y="2" width="1" height="1" fill="black"/><rect x="11" y="2" width="1" height="1" fill="black"/>
-                  <rect x="9" y="4" width="3" height="1" fill="black"/><rect x="9" y="9" width="5" height="1" fill="black"/>
-                  <rect x="14" y="9" width="1" height="5" fill="black"/><rect x="16" y="10" width="3" height="1" fill="black"/>
-                  <rect x="9" y="14" width="3" height="3" fill="black"/><rect x="13" y="15" width="2" height="2" fill="black"/>
-                  <rect x="16" y="14" width="2" height="4" fill="black"/><rect x="19" y="16" width="2" height="2" fill="black"/>
-                </svg>
+              <div class="w-44 h-44 mx-auto bg-white rounded-xl p-2 mb-4 flex items-center justify-center">
+                <canvas ref="qrCanvas" width="160" height="160"/>
               </div>
-              <p class="text-xs font-mono text-caramel font-bold">{{ eq.id }}</p>
-              <p class="text-xs text-denim-200/50 mt-1">{{ eq.name }}</p>
-              <button class="btn-secondary w-full justify-center mt-4 text-xs gap-1.5"><IconDownload :size="12"/>Download QR</button>
+              <p class="text-[10px] text-denim-200/40 mb-1 text-center">Scans to:</p>
+              <p class="text-xs font-mono text-caramel font-bold text-center break-all">{{ qrUrl }}</p>
+              <p class="text-xs text-denim-200/50 mt-1 text-center">{{ eq.name }}</p>
+              <button class="btn-secondary w-full justify-center mt-4 text-xs gap-1.5" @click="downloadQR"><IconDownload :size="12"/>Download QR</button>
             </div>
           </div>
         </div>
@@ -344,7 +340,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { ref, computed, watch, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import {
   IconArrowLeft, IconPencil, IconPrint, IconTrash, IconZap,
@@ -360,6 +356,49 @@ const eqId   = route.params.eqId as string
 
 const activeTab = ref("maintenance")
 const showQR    = ref(false)
+const qrCanvas  = ref<HTMLCanvasElement | null>(null)
+const qrUrl     = computed(() => `${window.location.origin}/equipment/detail/${eq.value.id}`)
+
+// Generate QR when modal opens
+watch(showQR, async (val) => {
+  if (!val) return
+  await nextTick()
+  const canvas = qrCanvas.value
+  if (!canvas) return
+  // Simple QR pattern using the Google Charts API via image
+  // We draw it to canvas via an image element
+  const url = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrUrl.value)}&format=png&bgcolor=ffffff&color=02314E`
+  const img = new Image()
+  img.crossOrigin = "anonymous"
+  img.onload = () => {
+    const ctx = canvas.getContext("2d")
+    if (ctx) { ctx.clearRect(0,0,160,160); ctx.drawImage(img,0,0,160,160) }
+  }
+  img.onerror = () => {
+    // Fallback: draw simple placeholder pattern
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+    ctx.fillStyle = "#ffffff"
+    ctx.fillRect(0,0,160,160)
+    ctx.fillStyle = "#02314E"
+    const size = 8
+    for (let r=0; r<20; r++) {
+      for (let c=0; c<20; c++) {
+        if ((r+c)%3===0 || (r*c)%5===1) ctx.fillRect(c*size, r*size, size-1, size-1)
+      }
+    }
+  }
+  img.src = url
+})
+
+function downloadQR() {
+  const canvas = qrCanvas.value
+  if (!canvas) return
+  const a = document.createElement("a")
+  a.download = `QR_${eq.value.id}.png`
+  a.href = canvas.toDataURL("image/png")
+  a.click()
+}
 const showEdit  = ref(false)
 const showSpecs = ref(true)
 

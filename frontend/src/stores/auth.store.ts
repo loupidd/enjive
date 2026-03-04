@@ -42,6 +42,7 @@ export const useAuthStore = defineStore("auth", () => {
     token.value = null;
     user.value = null;
     localStorage.removeItem("enjive:token");
+    window.location.href = "/login";
   }
 
   function hasRole(...roles: string[]): boolean {

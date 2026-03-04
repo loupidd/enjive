@@ -21,7 +21,7 @@
         @click="toggleStatusFilter(kpi.statusKey)"
       >
         <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" :class="kpi.iconBg">
-          <span class="text-lg">{{ kpi.icon }}</span>
+          <component :is="kpi.icon" :size="16" class="opacity-70"/>
         </div>
         <div>
           <p class="text-2xl font-bold leading-none" :class="kpi.color">{{ kpi.value }}</p>
@@ -437,8 +437,10 @@ import { ref, computed } from "vue"
 import {
   IconPlus, IconAlertTriangle, IconAlertCircle, IconCheckCircle,
   IconClock, IconCalendar, IconCheck, IconX, IconPencil, IconPrint,
-  IconPaperclip, IconRefresh, IconExternalLink
+  IconPaperclip, IconRefresh, IconExternalLink,
+  IconCircleDot,
 } from "@/components/icons"
+import { ShieldAlert, Clock4, CheckCircle, Flag } from "lucide-vue-next"
 
 const EQ_TYPES   = ["AC Fasilitas","Genset","Panel Listrik","CCTV","Fire Alarm","Pompa Air","Lift / Elevator"]
 const TECHNICIANS = ["Ahmad Fauzi","Budi Santoso","Citra Dewi","Dodi Prasetyo","Eko Wahyudi"]
@@ -477,10 +479,10 @@ const displayedTroubles = computed(() => filteredTroubles.value.slice((page.valu
 
 // ── KPIs ──────────────────────────────────────────────────────
 const kpis = computed(() => [
-  { label:"Alert", statusKey:"Alert",        value:troubles.value.filter(t=>t.status==="Alert").length,        color:"text-red-400",    iconBg:"bg-red-500/10",    ring:"border border-red-500/15 hover:border-red-500/30",    activeBg:"bg-red-500/10", icon:"🚨", pulse:true, dotColor:"bg-red-400" },
-  { label:"Open · Pending WO", statusKey:"Open-Pending", value:troubles.value.filter(t=>t.status==="Open-Pending").length, color:"text-yellow-300", iconBg:"bg-yellow-500/10", ring:"border border-yellow-500/15 hover:border-yellow-500/30", activeBg:"bg-yellow-500/10", icon:"⏳", pulse:false, dotColor:"" },
-  { label:"Open · WO Done",    statusKey:"Open-WO-Done", value:troubles.value.filter(t=>t.status==="Open-WO-Done").length, color:"text-green-300",  iconBg:"bg-green-500/10",  ring:"border border-green-500/15 hover:border-green-500/30",  activeBg:"bg-green-500/10", icon:"✅", pulse:false, dotColor:"" },
-  { label:"Finished", statusKey:"Finished",     value:troubles.value.filter(t=>t.status==="Finished").length,     color:"text-denim-200/60",iconBg:"bg-denim-600/30",  ring:"border border-denim-600/20 hover:border-denim-600/40",  activeBg:"bg-denim-600/20", icon:"🏁", pulse:false, dotColor:"" },
+  { label:"Alert", statusKey:"Alert",        value:troubles.value.filter(t=>t.status==="Alert").length,        color:"text-red-400",    iconBg:"bg-red-500/10 text-red-400",    ring:"border border-red-500/15 hover:border-red-500/30",    activeBg:"bg-red-500/10", icon:ShieldAlert, pulse:true, dotColor:"bg-red-400" },
+  { label:"Open · Pending WO", statusKey:"Open-Pending", value:troubles.value.filter(t=>t.status==="Open-Pending").length, color:"text-yellow-300", iconBg:"bg-yellow-500/10 text-yellow-300", ring:"border border-yellow-500/15 hover:border-yellow-500/30", activeBg:"bg-yellow-500/10", icon:Clock4, pulse:false, dotColor:"" },
+  { label:"Open · WO Done",    statusKey:"Open-WO-Done", value:troubles.value.filter(t=>t.status==="Open-WO-Done").length, color:"text-green-300",  iconBg:"bg-green-500/10 text-green-300",  ring:"border border-green-500/15 hover:border-green-500/30",  activeBg:"bg-green-500/10", icon:CheckCircle, pulse:false, dotColor:"" },
+  { label:"Finished", statusKey:"Finished",     value:troubles.value.filter(t=>t.status==="Finished").length,     color:"text-denim-200/60",iconBg:"bg-denim-600/30 text-denim-200/50",  ring:"border border-denim-600/20 hover:border-denim-600/40",  activeBg:"bg-denim-600/20", icon:Flag, pulse:false, dotColor:"" },
 ])
 
 // ── Helpers ───────────────────────────────────────────────────

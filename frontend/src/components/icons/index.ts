@@ -24,6 +24,7 @@ export {
   Activity as IconActivity,
   BarChart2 as IconBarChart,
   LayoutDashboard as IconDashboard,
+  Bell as IconBell,
   ClipboardList as IconClipboard,
   AlertTriangle as IconAlertTriangle,
   AlertCircle as IconAlertCircle,
