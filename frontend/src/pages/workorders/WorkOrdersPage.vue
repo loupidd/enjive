@@ -1,25 +1,19 @@
 <template>
   <div class="space-y-4">
+
     <!-- ── Header ──────────────────────────────────────────── -->
     <div class="flex items-center justify-between flex-wrap gap-3">
       <div>
         <h2 class="text-xl font-bold text-white tracking-tight">Task</h2>
-        <div class="accent-bar mt-1.5" />
+        <div class="accent-bar mt-1.5"/>
       </div>
       <!-- KPI strip -->
       <div class="flex items-center gap-3">
-        <div
-          v-for="kpi in kpis"
-          :key="kpi.label"
+        <div v-for="kpi in kpis" :key="kpi.label"
           class="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
-          :class="kpi.border"
-        >
-          <span class="text-lg font-bold" :class="kpi.color">{{
-            kpi.value
-          }}</span>
-          <span class="text-xs text-denim-200/50 leading-tight">{{
-            kpi.label
-          }}</span>
+          :class="kpi.border">
+          <span class="text-lg font-bold" :class="kpi.color">{{ kpi.value }}</span>
+          <span class="text-xs text-denim-200/50 leading-tight">{{ kpi.label }}</span>
         </div>
       </div>
     </div>
@@ -30,54 +24,41 @@
         <template v-for="(stage, i) in PIPELINE" :key="stage.key">
           <button
             class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all duration-150 min-w-[80px]"
-            :class="
-              activeStageFilter === stage.key
-                ? 'bg-caramel/15 ring-1 ring-caramel/40'
-                : 'hover:bg-denim-700/30'
-            "
+            :class="activeStageFilter===stage.key
+              ? 'bg-caramel/15 ring-1 ring-caramel/40'
+              : 'hover:bg-denim-700/30'"
             @click="toggleStageFilter(stage.key)"
           >
-            <span class="text-lg font-bold" :class="stage.color">{{
-              stageCounts[stage.key] || 0
-            }}</span>
-            <span
-              class="text-[10px] text-denim-200/50 text-center leading-tight whitespace-nowrap"
-              >{{ stage.label }}</span
-            >
+            <span class="text-lg font-bold" :class="stage.color">{{ stageCounts[stage.key] || 0 }}</span>
+            <span class="text-[10px] text-denim-200/50 text-center leading-tight whitespace-nowrap">{{ stage.label }}</span>
           </button>
-          <div
-            v-if="i < PIPELINE.length - 1"
-            class="flex items-center text-denim-600/40"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+          <div v-if="i < PIPELINE.length-1" class="flex items-center text-denim-600/40">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
         </template>
       </div>
     </div>
 
     <!-- ── Filters ──────────────────────────────────────────── -->
-    <div class="card">
+    <div class="card p-0 overflow-hidden">
+      <button class="w-full flex items-center justify-between px-4 py-3 hover:bg-denim-700/10 transition-colors" @click="showFilters=!showFilters">
+        <div class="flex items-center gap-2">
+          <IconFilter :size="13" class="text-caramel/60"/>
+          <span class="text-xs font-semibold text-denim-200/70 uppercase tracking-wide">Filters</span>
+          <span v-if="activeFilterCount > 0" class="text-[10px] bg-caramel/20 text-caramel px-1.5 py-0.5 rounded-full font-bold">{{ activeFilterCount }} active</span>
+        </div>
+        <IconChevronDown :size="14" class="text-denim-200/40 transition-transform duration-200" :class="showFilters?'rotate-180':''"/>
+      </button>
+      <Transition name="collapse">
+      <div v-if="showFilters" class="border-t border-denim-700/30 px-4 pb-4 pt-3">
       <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
         <div class="col-span-1">
           <label class="label">Start Date</label>
-          <input
-            v-model="filters.startDate"
-            type="date"
-            class="input text-xs"
-          />
+          <input v-model="filters.startDate" type="date" class="input text-xs"/>
         </div>
         <div class="col-span-1">
           <label class="label">End Date</label>
-          <input v-model="filters.endDate" type="date" class="input text-xs" />
+          <input v-model="filters.endDate" type="date" class="input text-xs"/>
         </div>
         <div>
           <label class="label">Equipment Type</label>
@@ -104,10 +85,7 @@
           <label class="label">Maint. Type</label>
           <select v-model="filters.maintType" class="input text-xs">
             <option value="">All</option>
-            <option>Preventive</option>
-            <option>Corrective</option>
-            <option>Predictive</option>
-            <option>Thermography</option>
+            <option>Preventive</option><option>Corrective</option><option>Predictive</option><option>Thermography</option>
           </select>
         </div>
         <div>
@@ -127,13 +105,11 @@
         </div>
       </div>
       <div class="flex justify-end gap-2 mt-3">
-        <button class="btn-secondary text-xs px-4" @click="resetFilters">
-          Reset
-        </button>
-        <button class="btn-primary text-xs px-4" @click="applyFilters">
-          Filter
-        </button>
+        <button class="btn-secondary text-xs px-4 gap-1.5" @click="resetFilters"><IconRefresh :size="12"/>Reset</button>
+        <button class="btn-primary text-xs px-4" @click="applyFilters">Apply Filter</button>
       </div>
+      </div>
+      </Transition>
     </div>
 
     <!-- ── Task Table ───────────────────────────────────────── -->
@@ -142,61 +118,17 @@
         <table class="w-full text-sm min-w-[1100px]">
           <thead>
             <tr class="border-b border-denim-700/40 bg-denim-900/40">
-              <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
-              >
-                ID
-              </th>
-              <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
-              >
-                Equipment
-              </th>
-              <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
-              >
-                Trouble ID
-              </th>
-              <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
-              >
-                Type
-              </th>
-              <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
-              >
-                Interval
-              </th>
-              <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
-              >
-                Start
-              </th>
-              <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
-              >
-                Duration
-              </th>
-              <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
-              >
-                Technician
-              </th>
-              <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide min-w-[160px]"
-              >
-                Progress
-              </th>
-              <th
-                class="px-3 py-3 text-center text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
-              >
-                ACK
-              </th>
-              <th
-                class="px-3 py-3 text-center text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
-              >
-                Action
-              </th>
+              <th class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide">ID</th>
+              <th class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide">Equipment</th>
+              <th class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide">Trouble ID</th>
+              <th class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide">Type</th>
+              <th class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide">Interval</th>
+              <th class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide">Start</th>
+              <th class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide">Duration</th>
+              <th class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide">Technician</th>
+              <th class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide min-w-[160px]">Progress</th>
+              <th class="px-3 py-3 text-center text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide">ACK</th>
+              <th class="px-3 py-3 text-center text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -208,28 +140,18 @@
             >
               <!-- ID -->
               <td class="px-3 py-2.5">
-                <span
-                  class="font-mono text-[11px] text-caramel font-semibold"
-                  >{{ task.id }}</span
-                >
+                <button class="font-mono text-[11px] text-caramel font-semibold hover:underline" @click.stop="router.push({ name:'WorkOrderDetail', params:{id:task.id} })">{{ task.id }}</button>
               </td>
 
               <!-- Equipment -->
               <td class="px-3 py-2.5">
-                <p class="font-mono text-[11px] text-white font-medium">
-                  {{ task.equipmentId }}
-                </p>
-                <p class="text-[10px] text-denim-200/40 mt-0.5">
-                  {{ task.equipmentType }}
-                </p>
+                <p class="font-mono text-[11px] text-white font-medium">{{ task.equipmentId }}</p>
+                <p class="text-[10px] text-denim-200/40 mt-0.5">{{ task.equipmentType }}</p>
               </td>
 
               <!-- Trouble ID -->
               <td class="px-3 py-2.5">
-                <span
-                  v-if="task.troubleId"
-                  class="font-mono text-[11px] text-orange-400 bg-orange-400/10 px-1.5 py-0.5 rounded"
-                >
+                <span v-if="task.troubleId" class="font-mono text-[11px] text-orange-400 bg-orange-400/10 px-1.5 py-0.5 rounded">
                   {{ task.troubleId }}
                 </span>
                 <span v-else class="text-denim-200/20 text-xs">—</span>
@@ -237,84 +159,50 @@
 
               <!-- Type -->
               <td class="px-3 py-2.5">
-                <span
-                  class="text-[10px] px-2 py-0.5 rounded font-semibold"
-                  :class="typeColor(task.type)"
-                  >{{ task.type }}</span
-                >
+                <span class="text-[10px] px-2 py-0.5 rounded font-semibold" :class="typeColor(task.type)">{{ task.type }}</span>
               </td>
 
               <!-- Interval -->
-              <td class="px-3 py-2.5 text-xs text-denim-100/60">
-                {{ task.interval }}
-              </td>
+              <td class="px-3 py-2.5 text-xs text-denim-100/60">{{ task.interval }}</td>
 
               <!-- Start Date -->
-              <td class="px-3 py-2.5 text-xs text-denim-100/70">
-                {{ task.startDate }}
-              </td>
+              <td class="px-3 py-2.5 text-xs text-denim-100/70">{{ task.startDate }}</td>
 
               <!-- Duration -->
               <td class="px-3 py-2.5">
-                <span
-                  v-if="task.status === 'Finish'"
-                  class="text-xs text-green-400 font-medium"
-                  >{{ task.duration }}</span
-                >
-                <span v-else class="text-xs text-denim-200/40"
-                  >In progress</span
-                >
+                <span v-if="task.status==='Finish'" class="text-xs text-green-400 font-medium">{{ task.duration }}</span>
+                <span v-else class="text-xs text-denim-200/40">In progress</span>
               </td>
 
               <!-- Technician -->
               <td class="px-3 py-2.5">
                 <div class="flex items-center gap-1.5">
-                  <div
-                    class="w-5 h-5 rounded-full bg-denim-600 flex items-center justify-center text-[9px] font-bold text-denim-200 shrink-0"
-                  >
-                    {{
-                      task.technician
-                        .split(" ")
-                        .map((n: string) => n[0])
-                        .join("")
-                    }}
+                  <div class="w-5 h-5 rounded-full bg-denim-600 flex items-center justify-center text-[9px] font-bold text-denim-200 shrink-0">
+                    {{ task.technician.split(' ').map((n:string)=>n[0]).join('') }}
                   </div>
-                  <span
-                    class="text-xs text-denim-100/70 truncate max-w-[80px]"
-                    >{{ task.technician }}</span
-                  >
+                  <span class="text-xs text-denim-100/70 truncate max-w-[80px]">{{ task.technician }}</span>
                 </div>
               </td>
 
               <!-- Progress bar -->
               <td class="px-3 py-2.5">
                 <div class="flex items-center gap-2">
-                  <div
-                    class="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden"
-                  >
+                  <div class="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                     <div
                       class="h-full rounded-full transition-all duration-500"
                       :class="progressColor(task.status)"
-                      :style="{ width: progressPct(task.status) + '%' }"
+                      :style="{ width: progressPct(task.status)+'%' }"
                     />
                   </div>
-                  <span
-                    class="text-[10px] font-semibold shrink-0"
-                    :class="statusTextColor(task.status)"
-                  >
+                  <span class="text-[10px] font-semibold shrink-0" :class="statusTextColor(task.status)">
                     {{ task.status }}
                   </span>
                 </div>
                 <div class="flex gap-px mt-1">
                   <div
-                    v-for="stage in PIPELINE"
-                    :key="stage.key"
+                    v-for="stage in PIPELINE" :key="stage.key"
                     class="flex-1 h-0.5 rounded-full transition-colors"
-                    :class="
-                      isStageReached(task.status, stage.key)
-                        ? stage.dotColor
-                        : 'bg-white/5'
-                    "
+                    :class="isStageReached(task.status, stage.key) ? stage.dotColor : 'bg-white/5'"
                   />
                 </div>
               </td>
@@ -338,45 +226,16 @@
                   <button
                     v-if="canEdit(task)"
                     class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-denim-600/60 text-denim-200/40 hover:text-white transition-colors"
-                    title="Edit"
-                    @click="openEdit(task)"
+                    title="Edit" @click="openEdit(task)"
                   >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path
-                        d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
-                      />
-                      <path
-                        d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
-                      />
-                    </svg>
+                    <IconPencil :size="12"/>
                   </button>
                   <button
-                    v-if="task.status === 'Finish'"
+                    v-if="task.status==='Finish'"
                     class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-green-500/15 text-denim-200/40 hover:text-green-400 transition-colors"
-                    title="Print Report"
-                    @click="printTask(task)"
+                    title="Print Report" @click="printTask(task)"
                   >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <polyline points="6 9 6 2 18 2 18 9" />
-                      <path
-                        d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"
-                      />
-                      <rect x="6" y="14" width="12" height="8" />
-                    </svg>
+                    <IconPrint :size="12"/>
                   </button>
                 </div>
               </td>
@@ -385,20 +244,7 @@
             <tr v-if="!displayedTasks.length">
               <td colspan="11" class="px-4 py-12 text-center">
                 <div class="flex flex-col items-center gap-2">
-                  <svg
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1"
-                    class="text-denim-200/20"
-                  >
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <line x1="9" y1="9" x2="15" y2="9" />
-                    <line x1="9" y1="13" x2="15" y2="13" />
-                    <line x1="9" y1="17" x2="11" y2="17" />
-                  </svg>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="text-denim-200/20"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="11" y2="17"/></svg>
                   <p class="text-denim-200/30 text-sm">No tasks found</p>
                 </div>
               </td>
@@ -408,31 +254,12 @@
       </div>
 
       <!-- Pagination -->
-      <div
-        class="flex items-center justify-between px-4 py-3 border-t border-denim-700/30"
-      >
-        <p class="text-xs text-denim-200/40">
-          Showing {{ displayedTasks.length }} of
-          {{ filteredTasks.length }} tasks
-        </p>
+      <div class="flex items-center justify-between px-4 py-3 border-t border-denim-700/30">
+        <p class="text-xs text-denim-200/40">Showing {{ displayedTasks.length }} of {{ filteredTasks.length }} tasks</p>
         <div class="flex gap-1">
-          <button
-            class="px-3 py-1 text-xs rounded-lg hover:bg-denim-700/40 text-denim-200/50 transition-colors"
-            :disabled="page === 1"
-            @click="page--"
-          >
-            ← Prev
-          </button>
-          <span class="px-3 py-1 text-xs text-denim-200/50"
-            >{{ page }} / {{ totalPages }}</span
-          >
-          <button
-            class="px-3 py-1 text-xs rounded-lg hover:bg-denim-700/40 text-denim-200/50 transition-colors"
-            :disabled="page >= totalPages"
-            @click="page++"
-          >
-            Next →
-          </button>
+          <button class="px-3 py-1 text-xs rounded-lg hover:bg-denim-700/40 text-denim-200/50 transition-colors" :disabled="page===1" @click="page--">← Prev</button>
+          <span class="px-3 py-1 text-xs text-denim-200/50">{{ page }} / {{ totalPages }}</span>
+          <button class="px-3 py-1 text-xs rounded-lg hover:bg-denim-700/40 text-denim-200/50 transition-colors" :disabled="page>=totalPages" @click="page++">Next →</button>
         </div>
       </div>
     </div>
@@ -440,22 +267,12 @@
     <!-- ── ACK / Approval Modal ─────────────────────────────── -->
     <Teleport to="body">
       <Transition name="modal">
-        <div
-          v-if="showAckModal"
-          class="fixed inset-0 z-50 flex items-center justify-center p-4"
-          @click.self="showAckModal = false"
-        >
-          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          <div
-            class="relative bg-denim-800 border border-denim-600/40 rounded-2xl shadow-2xl w-full max-w-md"
-          >
+        <div v-if="showAckModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="showAckModal=false">
+          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"/>
+          <div class="relative bg-denim-800 border border-denim-600/40 rounded-2xl shadow-2xl w-full max-w-md">
             <div class="px-6 py-5 border-b border-denim-700/40">
-              <h3 class="font-bold text-white text-base">
-                {{ ackModalTitle }}
-              </h3>
-              <p class="text-xs text-denim-200/50 mt-1 font-mono">
-                {{ ackTask?.id }} · {{ ackTask?.equipmentId }}
-              </p>
+              <h3 class="font-bold text-white text-base">{{ ackModalTitle }}</h3>
+              <p class="text-xs text-denim-200/50 mt-1 font-mono">{{ ackTask?.id }} · {{ ackTask?.equipmentId }}</p>
             </div>
 
             <!-- Task summary -->
@@ -463,65 +280,39 @@
               <div class="grid grid-cols-2 gap-3 text-xs">
                 <div class="bg-denim-900/50 rounded-lg p-3">
                   <p class="text-denim-200/40 mb-0.5">Type</p>
-                  <p class="font-semibold" :class="typeColor(ackTask?.type)">
-                    {{ ackTask?.type }}
-                  </p>
+                  <p class="font-semibold" :class="typeColor(ackTask?.type)">{{ ackTask?.type }}</p>
                 </div>
                 <div class="bg-denim-900/50 rounded-lg p-3">
                   <p class="text-denim-200/40 mb-0.5">Interval</p>
-                  <p class="text-white font-semibold">
-                    {{ ackTask?.interval }}
-                  </p>
+                  <p class="text-white font-semibold">{{ ackTask?.interval }}</p>
                 </div>
                 <div class="bg-denim-900/50 rounded-lg p-3">
                   <p class="text-denim-200/40 mb-0.5">Technician</p>
-                  <p class="text-white font-semibold">
-                    {{ ackTask?.technician }}
-                  </p>
+                  <p class="text-white font-semibold">{{ ackTask?.technician }}</p>
                 </div>
                 <div class="bg-denim-900/50 rounded-lg p-3">
                   <p class="text-denim-200/40 mb-0.5">Current Status</p>
-                  <p
-                    class="font-semibold"
-                    :class="statusTextColor(ackTask?.status)"
-                  >
-                    {{ ackTask?.status }}
-                  </p>
+                  <p class="font-semibold" :class="statusTextColor(ackTask?.status)">{{ ackTask?.status }}</p>
                 </div>
               </div>
 
               <!-- Note -->
               <div>
                 <label class="label">Note / Remark</label>
-                <textarea
-                  v-model="ackNote"
-                  class="input resize-none"
-                  rows="3"
-                  placeholder="Optional note for this approval..."
-                />
+                <textarea v-model="ackNote" class="input resize-none" rows="3" placeholder="Optional note for this approval..."/>
               </div>
 
               <!-- Work report hint for technician -->
-              <div
-                v-if="ackTask?.status === 'Waiting'"
-                class="bg-caramel/5 border border-caramel/20 rounded-lg px-3 py-2.5 text-xs text-caramel/80"
-              >
-                💡 After approving, you will fill the Work Report for each
-                activity in this task.
+              <div v-if="ackTask?.status==='Waiting'" class="bg-caramel/5 border border-caramel/20 rounded-lg px-3 py-2.5 text-xs text-caramel/80">
+                💡 After approving, you will fill the Work Report for each activity in this task.
               </div>
             </div>
 
             <div class="px-6 pb-5 flex gap-2">
-              <button
-                class="btn-danger flex-1 justify-center"
-                @click="rejectTask"
-              >
+              <button class="btn-danger flex-1 justify-center" @click="rejectTask">
                 ✕ Reject
               </button>
-              <button
-                class="btn-primary flex-1 justify-center"
-                @click="approveTask"
-              >
+              <button class="btn-primary flex-1 justify-center" @click="approveTask">
                 ✓ {{ ackActionLabel }}
               </button>
             </div>
@@ -533,628 +324,271 @@
     <!-- ── Edit Task Modal ──────────────────────────────────── -->
     <Teleport to="body">
       <Transition name="modal">
-        <div
-          v-if="showEditModal"
-          class="fixed inset-0 z-50 flex items-center justify-center p-4"
-          @click.self="showEditModal = false"
-        >
-          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          <div
-            class="relative bg-denim-800 border border-denim-600/40 rounded-2xl shadow-2xl w-full max-w-lg"
-          >
-            <div
-              class="flex items-center justify-between px-6 py-4 border-b border-denim-700/40"
-            >
+        <div v-if="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="showEditModal=false">
+          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"/>
+          <div class="relative bg-denim-800 border border-denim-600/40 rounded-2xl shadow-2xl w-full max-w-lg">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-denim-700/40">
               <div>
                 <h3 class="font-bold text-white">Edit Task</h3>
-                <p class="text-xs font-mono text-denim-200/50 mt-0.5">
-                  {{ editingTask?.id }}
-                </p>
+                <p class="text-xs font-mono text-denim-200/50 mt-0.5">{{ editingTask?.id }}</p>
               </div>
-              <button
-                class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-denim-200/50"
-                @click="showEditModal = false"
-              >
-                ✕
-              </button>
+              <button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-denim-200/50" @click="showEditModal=false">✕</button>
             </div>
             <div class="px-6 py-5 space-y-4">
               <div>
                 <label class="label">Technician Coordinator</label>
                 <select v-model="editForm.technician" class="input">
-                  <option v-for="t in TECHNICIANS" :key="t" :value="t">
-                    {{ t }}
-                  </option>
+                  <option v-for="t in TECHNICIANS" :key="t" :value="t">{{ t }}</option>
                 </select>
               </div>
               <div>
                 <label class="label">Note WO</label>
-                <textarea
-                  v-model="editForm.note"
-                  class="input resize-none"
-                  rows="3"
-                />
+                <textarea v-model="editForm.note" class="input resize-none" rows="3"/>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="label">Start Date</label>
-                  <input
-                    v-model="editForm.startDate"
-                    type="date"
-                    class="input"
-                  />
+                  <input v-model="editForm.startDate" type="date" class="input"/>
                 </div>
                 <div>
                   <label class="label">Maintenance Type</label>
                   <select v-model="editForm.type" class="input">
-                    <option>Preventive</option>
-                    <option>Corrective</option>
-                    <option>Predictive</option>
-                    <option>Thermography Investigation</option>
+                    <option>Preventive</option><option>Corrective</option><option>Predictive</option><option>Thermography Investigation</option>
                   </select>
                 </div>
               </div>
             </div>
             <div class="px-6 pb-5 flex justify-end gap-2">
-              <button class="btn-secondary" @click="showEditModal = false">
-                Cancel
-              </button>
-              <button class="btn-primary" @click="saveEdit">
-                Save Changes
-              </button>
+              <button class="btn-secondary" @click="showEditModal=false">Cancel</button>
+              <button class="btn-primary" @click="saveEdit">Save Changes</button>
             </div>
           </div>
         </div>
       </Transition>
     </Teleport>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed } from "vue"
+import { useRouter } from "vue-router"
+const router = useRouter()
+import {
+  IconFilter, IconChevronDown, IconPencil, IconPrint,
+  IconCheck, IconX, IconAlertTriangle, IconRefresh
+} from "@/components/icons"
 
 // ── Constants ─────────────────────────────────────────────────
 const PIPELINE = [
-  {
-    key: "Waiting",
-    label: "Waiting",
-    color: "text-slate-400",
-    dotColor: "bg-slate-400",
-    bgColor: "bg-slate-400/15",
-  },
-  {
-    key: "Process",
-    label: "Process",
-    color: "text-caramel",
-    dotColor: "bg-caramel",
-    bgColor: "bg-caramel/15",
-  },
-  {
-    key: "Reporting",
-    label: "Reporting",
-    color: "text-yellow-300",
-    dotColor: "bg-yellow-300",
-    bgColor: "bg-yellow-300/15",
-  },
-  {
-    key: "Review",
-    label: "Review",
-    color: "text-blue-400",
-    dotColor: "bg-blue-400",
-    bgColor: "bg-blue-400/15",
-  },
-  {
-    key: "Client Spv Review",
-    label: "Spv Review",
-    color: "text-purple-400",
-    dotColor: "bg-purple-400",
-    bgColor: "bg-purple-400/15",
-  },
-  {
-    key: "Chief Eng Review",
-    label: "Chief Eng",
-    color: "text-cyan-400",
-    dotColor: "bg-cyan-400",
-    bgColor: "bg-cyan-400/15",
-  },
-  {
-    key: "Finish",
-    label: "Finish",
-    color: "text-green-400",
-    dotColor: "bg-green-400",
-    bgColor: "bg-green-400/15",
-  },
-  {
-    key: "Reject",
-    label: "Rejected",
-    color: "text-red-400",
-    dotColor: "bg-red-400",
-    bgColor: "bg-red-400/15",
-  },
-];
+  { key:"Waiting",          label:"Waiting",       color:"text-slate-400",  dotColor:"bg-slate-400",   bgColor:"bg-slate-400/15"  },
+  { key:"Process",          label:"Process",       color:"text-caramel",    dotColor:"bg-caramel",     bgColor:"bg-caramel/15"    },
+  { key:"Reporting",        label:"Reporting",     color:"text-yellow-300", dotColor:"bg-yellow-300",  bgColor:"bg-yellow-300/15" },
+  { key:"Review",           label:"Review",        color:"text-blue-400",   dotColor:"bg-blue-400",    bgColor:"bg-blue-400/15"   },
+  { key:"Client Spv Review",label:"Spv Review",    color:"text-purple-400", dotColor:"bg-purple-400",  bgColor:"bg-purple-400/15" },
+  { key:"Chief Eng Review", label:"Chief Eng",     color:"text-cyan-400",   dotColor:"bg-cyan-400",    bgColor:"bg-cyan-400/15"   },
+  { key:"Finish",           label:"Finish",        color:"text-green-400",  dotColor:"bg-green-400",   bgColor:"bg-green-400/15"  },
+  { key:"Reject",           label:"Rejected",      color:"text-red-400",    dotColor:"bg-red-400",     bgColor:"bg-red-400/15"    },
+]
 
-const PIPELINE_ORDER = [
-  "Waiting",
-  "Process",
-  "Reporting",
-  "Review",
-  "Client Spv Review",
-  "Chief Eng Review",
-  "Finish",
-];
+const PIPELINE_ORDER = ["Waiting","Process","Reporting","Review","Client Spv Review","Chief Eng Review","Finish"]
 
-const EQ_TYPES = [
-  "AC Fasilitas",
-  "Genset",
-  "Panel Listrik",
-  "CCTV",
-  "Fire Alarm",
-  "Pompa Air",
-  "Lift / Elevator",
-];
-const INTERVALS = [
-  "Once",
-  "Daily",
-  "Weekly",
-  "Monthly",
-  "Bi-Monthly",
-  "3 Monthly",
-  "4 Monthly",
-  "6 Monthly",
-  "Yearly",
-  "4 Yearly",
-];
-const STATUSES = [
-  "Waiting",
-  "Process",
-  "Reporting",
-  "Review",
-  "Client Spv Review",
-  "Chief Eng Review",
-  "Finish",
-  "Reject",
-];
-const TECHNICIANS = [
-  "Ahmad Fauzi",
-  "Budi Santoso",
-  "Citra Dewi",
-  "Dodi Prasetyo",
-  "Eko Wahyudi",
-];
+const EQ_TYPES   = ["AC Fasilitas","Genset","Panel Listrik","CCTV","Fire Alarm","Pompa Air","Lift / Elevator"]
+const INTERVALS  = ["Once","Daily","Weekly","Monthly","Bi-Monthly","3 Monthly","4 Monthly","6 Monthly","Yearly","4 Yearly"]
+const STATUSES   = ["Waiting","Process","Reporting","Review","Client Spv Review","Chief Eng Review","Finish","Reject"]
+const TECHNICIANS = ["Ahmad Fauzi","Budi Santoso","Citra Dewi","Dodi Prasetyo","Eko Wahyudi"]
 
 // ── Mock current user role ────────────────────────────────────
 // In real app: get from auth store
-const currentRole = ref("TECHNICIAN"); // TECHNICIAN | LEAD_TECH | CLIENT_SPV | CHIEF_ENG | ADMIN
+const currentRole = ref("TECHNICIAN") // TECHNICIAN | LEAD_TECH | CLIENT_SPV | CHIEF_ENG | ADMIN
 
 // ── Sample task data ──────────────────────────────────────────
 const tasks = ref([
-  {
-    id: "WO-2026-0001",
-    equipmentId: "EDA_AC_001",
-    equipmentType: "AC Fasilitas",
-    troubleId: null,
-    type: "Preventive",
-    interval: "Monthly",
-    startDate: "2026-03-01",
-    duration: "2h 15m",
-    technician: "Ahmad Fauzi",
-    note: "Routine PM",
-    status: "Waiting",
-    noteWO: "",
-  },
-  {
-    id: "WO-2026-0002",
-    equipmentId: "EDA_GEN_001",
-    equipmentType: "Genset",
-    troubleId: null,
-    type: "Preventive",
-    interval: "3 Monthly",
-    startDate: "2026-03-01",
-    duration: "4h 30m",
-    technician: "Budi Santoso",
-    note: "Quarterly inspection",
-    status: "Process",
-    noteWO: "",
-  },
-  {
-    id: "WO-2026-0003",
-    equipmentId: "EDA_PUMP_003",
-    equipmentType: "Pompa Air",
-    troubleId: "TBL-2026-01",
-    type: "Corrective",
-    interval: "Once",
-    startDate: "2026-02-28",
-    duration: "3h 00m",
-    technician: "Citra Dewi",
-    note: "Fix water pump leak",
-    status: "Reporting",
-    noteWO: "Corrective WO",
-  },
-  {
-    id: "WO-2026-0004",
-    equipmentId: "EDA_PNL_001",
-    equipmentType: "Panel Listrik",
-    troubleId: null,
-    type: "Thermography Investigation",
-    interval: "6 Monthly",
-    startDate: "2026-02-25",
-    duration: "1h 45m",
-    technician: "Ahmad Fauzi",
-    note: "Thermo panel check",
-    status: "Review",
-    noteWO: "",
-  },
-  {
-    id: "WO-2026-0005",
-    equipmentId: "EDA_AC_002",
-    equipmentType: "AC Fasilitas",
-    troubleId: null,
-    type: "Preventive",
-    interval: "Monthly",
-    startDate: "2026-02-20",
-    duration: "2h 00m",
-    technician: "Dodi Prasetyo",
-    note: "",
-    status: "Client Spv Review",
-    noteWO: "",
-  },
-  {
-    id: "WO-2026-0006",
-    equipmentId: "EDA_CCTV_001",
-    equipmentType: "CCTV",
-    troubleId: null,
-    type: "Preventive",
-    interval: "Monthly",
-    startDate: "2026-02-15",
-    duration: "1h 20m",
-    technician: "Eko Wahyudi",
-    note: "",
-    status: "Chief Eng Review",
-    noteWO: "",
-  },
-  {
-    id: "WO-2026-0007",
-    equipmentId: "EDA_LIFT_001",
-    equipmentType: "Lift / Elevator",
-    troubleId: null,
-    type: "Preventive",
-    interval: "Monthly",
-    startDate: "2026-02-10",
-    duration: "3h 10m",
-    technician: "Budi Santoso",
-    note: "",
-    status: "Finish",
-    noteWO: "",
-  },
-  {
-    id: "WO-2026-0008",
-    equipmentId: "EDA_FA_001",
-    equipmentType: "Fire Alarm",
-    troubleId: null,
-    type: "Predictive",
-    interval: "6 Monthly",
-    startDate: "2026-02-05",
-    duration: "",
-    technician: "Ahmad Fauzi",
-    note: "",
-    status: "Reject",
-    noteWO: "",
-  },
-  {
-    id: "WO-2026-0009",
-    equipmentId: "EDA_AC_001",
-    equipmentType: "AC Fasilitas",
-    troubleId: null,
-    type: "Preventive",
-    interval: "Monthly",
-    startDate: "2026-03-03",
-    duration: "",
-    technician: "Citra Dewi",
-    note: "",
-    status: "Waiting",
-    noteWO: "",
-  },
-]);
+  { id:"WO-2026-0001", equipmentId:"EDA_AC_001",    equipmentType:"AC Fasilitas",  troubleId:null,         type:"Preventive",   interval:"Monthly",   startDate:"2026-03-01", duration:"2h 15m", technician:"Ahmad Fauzi",  note:"Routine PM",            status:"Waiting",          noteWO:"" },
+  { id:"WO-2026-0002", equipmentId:"EDA_GEN_001",   equipmentType:"Genset",        troubleId:null,         type:"Preventive",   interval:"3 Monthly", startDate:"2026-03-01", duration:"4h 30m", technician:"Budi Santoso", note:"Quarterly inspection",  status:"Process",          noteWO:"" },
+  { id:"WO-2026-0003", equipmentId:"EDA_PUMP_003",  equipmentType:"Pompa Air",     troubleId:"TBL-2026-01",type:"Corrective",   interval:"Once",      startDate:"2026-02-28", duration:"3h 00m", technician:"Citra Dewi",   note:"Fix water pump leak",   status:"Reporting",        noteWO:"Corrective WO" },
+  { id:"WO-2026-0004", equipmentId:"EDA_PNL_001",   equipmentType:"Panel Listrik", troubleId:null,         type:"Thermography Investigation", interval:"6 Monthly", startDate:"2026-02-25", duration:"1h 45m", technician:"Ahmad Fauzi",  note:"Thermo panel check",    status:"Review",           noteWO:"" },
+  { id:"WO-2026-0005", equipmentId:"EDA_AC_002",    equipmentType:"AC Fasilitas",  troubleId:null,         type:"Preventive",   interval:"Monthly",   startDate:"2026-02-20", duration:"2h 00m", technician:"Dodi Prasetyo",note:"",                      status:"Client Spv Review",noteWO:"" },
+  { id:"WO-2026-0006", equipmentId:"EDA_CCTV_001",  equipmentType:"CCTV",          troubleId:null,         type:"Preventive",   interval:"Monthly",   startDate:"2026-02-15", duration:"1h 20m", technician:"Eko Wahyudi",  note:"",                      status:"Chief Eng Review", noteWO:"" },
+  { id:"WO-2026-0007", equipmentId:"EDA_LIFT_001",  equipmentType:"Lift / Elevator",troubleId:null,        type:"Preventive",   interval:"Monthly",   startDate:"2026-02-10", duration:"3h 10m", technician:"Budi Santoso", note:"",                      status:"Finish",           noteWO:"" },
+  { id:"WO-2026-0008", equipmentId:"EDA_FA_001",    equipmentType:"Fire Alarm",    troubleId:null,         type:"Predictive",   interval:"6 Monthly", startDate:"2026-02-05", duration:"",       technician:"Ahmad Fauzi",  note:"",                      status:"Reject",           noteWO:"" },
+  { id:"WO-2026-0009", equipmentId:"EDA_AC_001",    equipmentType:"AC Fasilitas",  troubleId:null,         type:"Preventive",   interval:"Monthly",   startDate:"2026-03-03", duration:"",       technician:"Citra Dewi",   note:"",                      status:"Waiting",          noteWO:"" },
+])
 
 // ── Filters ───────────────────────────────────────────────────
-const filters = ref({
-  startDate: "",
-  endDate: "",
-  equipmentType: "",
-  status: "",
-  interval: "",
-  maintType: "",
-  technician: "",
-  thermographic: "",
-});
-const activeFilter = ref({ ...filters.value });
-const activeStageFilter = ref("");
-const page = ref(1);
-const PER_PAGE = 8;
+const filters = ref({ startDate:"", endDate:"", equipmentType:"", status:"", interval:"", maintType:"", technician:"", thermographic:"" })
+const activeFilter = ref({ ...filters.value })
+const activeStageFilter = ref("")
+const showFilters = ref(false)
+const activeFilterCount = computed(() => Object.values(activeFilter.value).filter(v=>v).length)
+const page = ref(1)
+const PER_PAGE = 8
 
-function resetFilters() {
-  filters.value = {
-    startDate: "",
-    endDate: "",
-    equipmentType: "",
-    status: "",
-    interval: "",
-    maintType: "",
-    technician: "",
-    thermographic: "",
-  };
-  activeFilter.value = { ...filters.value };
-  activeStageFilter.value = "";
-  page.value = 1;
-}
-function applyFilters() {
-  activeFilter.value = { ...filters.value };
-  activeStageFilter.value = "";
-  page.value = 1;
-}
-function toggleStageFilter(key: string) {
-  activeStageFilter.value = activeStageFilter.value === key ? "" : key;
-  page.value = 1;
-}
+function resetFilters() { filters.value={ startDate:"",endDate:"",equipmentType:"",status:"",interval:"",maintType:"",technician:"",thermographic:"" }; activeFilter.value={...filters.value}; activeStageFilter.value=""; page.value=1 }
+function applyFilters() { activeFilter.value={...filters.value}; activeStageFilter.value=""; page.value=1 }
+function toggleStageFilter(key: string) { activeStageFilter.value = activeStageFilter.value===key?"":key; page.value=1 }
 
 const filteredTasks = computed(() => {
-  return tasks.value.filter((t) => {
-    if (activeStageFilter.value && t.status !== activeStageFilter.value)
-      return false;
-    if (
-      activeFilter.value.equipmentType &&
-      t.equipmentType !== activeFilter.value.equipmentType
-    )
-      return false;
-    if (activeFilter.value.status && t.status !== activeFilter.value.status)
-      return false;
-    if (
-      activeFilter.value.interval &&
-      t.interval !== activeFilter.value.interval
-    )
-      return false;
-    if (activeFilter.value.maintType && t.type !== activeFilter.value.maintType)
-      return false;
-    if (
-      activeFilter.value.technician &&
-      t.technician !== activeFilter.value.technician
-    )
-      return false;
-    if (
-      activeFilter.value.thermographic === "yes" &&
-      t.type !== "Thermography Investigation"
-    )
-      return false;
-    if (
-      activeFilter.value.thermographic === "no" &&
-      t.type === "Thermography Investigation"
-    )
-      return false;
-    return true;
-  });
-});
+  return tasks.value.filter(t => {
+    if(activeStageFilter.value && t.status !== activeStageFilter.value) return false
+    if(activeFilter.value.equipmentType && t.equipmentType !== activeFilter.value.equipmentType) return false
+    if(activeFilter.value.status && t.status !== activeFilter.value.status) return false
+    if(activeFilter.value.interval && t.interval !== activeFilter.value.interval) return false
+    if(activeFilter.value.maintType && t.type !== activeFilter.value.maintType) return false
+    if(activeFilter.value.technician && t.technician !== activeFilter.value.technician) return false
+    if(activeFilter.value.thermographic==="yes" && t.type !== "Thermography Investigation") return false
+    if(activeFilter.value.thermographic==="no" && t.type === "Thermography Investigation") return false
+    return true
+  })
+})
 
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredTasks.value.length / PER_PAGE)),
-);
-const displayedTasks = computed(() =>
-  filteredTasks.value.slice((page.value - 1) * PER_PAGE, page.value * PER_PAGE),
-);
+const totalPages  = computed(() => Math.max(1, Math.ceil(filteredTasks.value.length / PER_PAGE)))
+const displayedTasks = computed(() => filteredTasks.value.slice((page.value-1)*PER_PAGE, page.value*PER_PAGE))
 
 // ── KPIs ──────────────────────────────────────────────────────
 const kpis = computed(() => [
-  {
-    label: "Waiting",
-    value: tasks.value.filter((t) => t.status === "Waiting").length,
-    color: "text-slate-300",
-    border: "border-denim-600/30 bg-denim-800/40",
-  },
-  {
-    label: "Active",
-    value: tasks.value.filter((t) =>
-      [
-        "Process",
-        "Reporting",
-        "Review",
-        "Client Spv Review",
-        "Chief Eng Review",
-      ].includes(t.status),
-    ).length,
-    color: "text-caramel",
-    border: "border-caramel/20 bg-caramel/5",
-  },
-  {
-    label: "Finished",
-    value: tasks.value.filter((t) => t.status === "Finish").length,
-    color: "text-green-400",
-    border: "border-green-500/20 bg-green-500/5",
-  },
-  {
-    label: "Rejected",
-    value: tasks.value.filter((t) => t.status === "Reject").length,
-    color: "text-red-400",
-    border: "border-red-500/20 bg-red-500/5",
-  },
-]);
+  { label:"Waiting",  value: tasks.value.filter(t=>t.status==="Waiting").length,  color:"text-slate-300",  border:"border-denim-600/30 bg-denim-800/40" },
+  { label:"Active",   value: tasks.value.filter(t=>["Process","Reporting","Review","Client Spv Review","Chief Eng Review"].includes(t.status)).length, color:"text-caramel", border:"border-caramel/20 bg-caramel/5" },
+  { label:"Finished", value: tasks.value.filter(t=>t.status==="Finish").length,   color:"text-green-400",  border:"border-green-500/20 bg-green-500/5" },
+  { label:"Rejected", value: tasks.value.filter(t=>t.status==="Reject").length,   color:"text-red-400",    border:"border-red-500/20 bg-red-500/5" },
+])
 
 const stageCounts = computed(() => {
-  const counts: Record<string, number> = {};
-  tasks.value.forEach((t) => {
-    counts[t.status] = (counts[t.status] || 0) + 1;
-  });
-  return counts;
-});
+  const counts: Record<string,number> = {}
+  tasks.value.forEach(t => { counts[t.status] = (counts[t.status]||0)+1 })
+  return counts
+})
 
 // ── Progress helpers ──────────────────────────────────────────
 function progressPct(status: string) {
-  const idx = PIPELINE_ORDER.indexOf(status);
-  if (idx < 0) return 0;
-  return Math.round(((idx + 1) / PIPELINE_ORDER.length) * 100);
+  const idx = PIPELINE_ORDER.indexOf(status)
+  if(idx < 0) return 0
+  return Math.round(((idx+1) / PIPELINE_ORDER.length) * 100)
 }
 function progressColor(status: string) {
-  if (status === "Finish") return "bg-green-500";
-  if (status === "Reject") return "bg-red-500";
-  if (status === "Waiting") return "bg-slate-500";
-  return "bg-caramel";
+  if(status==="Finish")  return "bg-green-500"
+  if(status==="Reject")  return "bg-red-500"
+  if(status==="Waiting") return "bg-slate-500"
+  return "bg-caramel"
 }
 function statusTextColor(status: string) {
-  const map: Record<string, string> = {
-    Waiting: "text-slate-400",
-    Process: "text-caramel",
-    Reporting: "text-yellow-300",
-    Review: "text-blue-400",
-    "Client Spv Review": "text-purple-400",
-    "Chief Eng Review": "text-cyan-400",
-    Finish: "text-green-400",
-    Reject: "text-red-400",
-  };
-  return map[status] ?? "text-denim-200";
+  const map: Record<string,string> = { Waiting:"text-slate-400", Process:"text-caramel", Reporting:"text-yellow-300", Review:"text-blue-400", "Client Spv Review":"text-purple-400", "Chief Eng Review":"text-cyan-400", Finish:"text-green-400", Reject:"text-red-400" }
+  return map[status] ?? "text-denim-200"
 }
 function isStageReached(taskStatus: string, stageKey: string) {
-  if (taskStatus === "Reject") return stageKey === "Reject";
-  const taskIdx = PIPELINE_ORDER.indexOf(taskStatus);
-  const stageIdx = PIPELINE_ORDER.indexOf(stageKey);
-  return stageIdx <= taskIdx;
+  if(taskStatus==="Reject") return stageKey==="Reject"
+  const taskIdx  = PIPELINE_ORDER.indexOf(taskStatus)
+  const stageIdx = PIPELINE_ORDER.indexOf(stageKey)
+  return stageIdx <= taskIdx
 }
 
 // ── Type colors ───────────────────────────────────────────────
 function typeColor(type: string) {
-  if (type === "Preventive") return "bg-blue-500/15 text-blue-300";
-  if (type === "Corrective") return "bg-orange-500/15 text-orange-300";
-  if (type === "Predictive") return "bg-green-500/15 text-green-300";
-  if (type === "Thermography Investigation")
-    return "bg-purple-500/15 text-purple-300";
-  return "bg-denim-600/40 text-denim-200";
+  if(type==="Preventive")   return "bg-blue-500/15 text-blue-300"
+  if(type==="Corrective")   return "bg-orange-500/15 text-orange-300"
+  if(type==="Predictive")   return "bg-green-500/15 text-green-300"
+  if(type==="Thermography Investigation") return "bg-purple-500/15 text-purple-300"
+  return "bg-denim-600/40 text-denim-200"
 }
 
 // ── ACK logic (role-based) ────────────────────────────────────
 function canAck(task: any) {
-  if (task.status === "Finish" || task.status === "Reject") return false;
-  if (currentRole.value === "TECHNICIAN" && task.status === "Waiting")
-    return true;
-  if (currentRole.value === "LEAD_TECH" && task.status === "Reporting")
-    return true;
-  if (currentRole.value === "CLIENT_SPV" && task.status === "Review")
-    return true;
-  if (currentRole.value === "CHIEF_ENG" && task.status === "Chief Eng Review")
-    return true;
-  if (currentRole.value === "ADMIN")
-    return !["Finish", "Reject"].includes(task.status);
-  return false;
+  if(task.status==="Finish" || task.status==="Reject") return false
+  if(currentRole.value==="TECHNICIAN"  && task.status==="Waiting")          return true
+  if(currentRole.value==="LEAD_TECH"   && task.status==="Reporting")        return true
+  if(currentRole.value==="CLIENT_SPV"  && task.status==="Review")           return true
+  if(currentRole.value==="CHIEF_ENG"   && task.status==="Chief Eng Review") return true
+  if(currentRole.value==="ADMIN") return !["Finish","Reject"].includes(task.status)
+  return false
 }
 function canEdit(task: any) {
-  if (task.status === "Finish" || task.status === "Reject") return false;
-  if (currentRole.value === "TECHNICIAN" && task.status === "Waiting")
-    return true;
-  if (
-    currentRole.value === "LEAD_TECH" &&
-    ["Waiting", "Process", "Reporting"].includes(task.status)
-  )
-    return true;
-  if (currentRole.value === "ADMIN") return true;
-  return false;
+  if(task.status==="Finish" || task.status==="Reject") return false
+  if(currentRole.value==="TECHNICIAN"  && task.status==="Waiting")   return true
+  if(currentRole.value==="LEAD_TECH"   && ["Waiting","Process","Reporting"].includes(task.status)) return true
+  if(currentRole.value==="ADMIN") return true
+  return false
 }
 function ackLabel(task: any) {
-  if (task.status === "Waiting") return "Approve";
-  if (task.status === "Reporting") return "Review";
-  if (task.status === "Review") return "Approve";
-  if (task.status === "Chief Eng Review") return "Finalize";
-  return "ACK";
+  if(task.status==="Waiting")          return "Approve"
+  if(task.status==="Reporting")        return "Review"
+  if(task.status==="Review")           return "Approve"
+  if(task.status==="Chief Eng Review") return "Finalize"
+  return "ACK"
 }
 function ackStyle(task: any) {
-  if (task.status === "Waiting")
-    return "bg-caramel text-denim-950 hover:bg-caramel/80 shadow-md shadow-caramel/20";
-  if (task.status === "Reporting")
-    return "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30";
-  if (task.status === "Review")
-    return "bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/30";
-  if (task.status === "Chief Eng Review")
-    return "bg-green-500/20 text-green-300 hover:bg-green-500/30 border border-green-500/30";
-  return "bg-denim-600/50 text-denim-200 hover:bg-denim-600";
+  if(task.status==="Waiting") return "bg-caramel text-denim-950 hover:bg-caramel/80 shadow-md shadow-caramel/20"
+  if(task.status==="Reporting") return "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
+  if(task.status==="Review") return "bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/30"
+  if(task.status==="Chief Eng Review") return "bg-green-500/20 text-green-300 hover:bg-green-500/30 border border-green-500/30"
+  return "bg-denim-600/50 text-denim-200 hover:bg-denim-600"
 }
 function ackActionLabel() {
-  if (!ackTask.value) return "Approve";
-  return ackLabel(ackTask.value);
+  if(!ackTask.value) return "Approve"
+  return ackLabel(ackTask.value)
 }
 
 // ── ACK Modal ─────────────────────────────────────────────────
-const showAckModal = ref(false);
-const ackTask = ref<any>(null);
-const ackNote = ref("");
+const showAckModal = ref(false)
+const ackTask = ref<any>(null)
+const ackNote = ref("")
 const ackModalTitle = computed(() => {
-  if (!ackTask.value) return "";
-  const titles: Record<string, string> = {
+  if(!ackTask.value) return ""
+  const titles: Record<string,string> = {
     Waiting: "Approve & Start Task",
     Reporting: "Lead Tech Review",
     Review: "Client SPV Approval",
     "Chief Eng Review": "Chief Engineer Finalization",
-  };
-  return titles[ackTask.value.status] ?? "Acknowledge Task";
-});
+  }
+  return titles[ackTask.value.status] ?? "Acknowledge Task"
+})
 
-function openAck(task: any) {
-  ackTask.value = task;
-  ackNote.value = "";
-  showAckModal.value = true;
-}
+function openAck(task: any) { ackTask.value=task; ackNote.value=""; showAckModal.value=true }
 
 function approveTask() {
-  if (!ackTask.value) return;
-  const nextStatus: Record<string, string> = {
-    Waiting: "Process",
-    Process: "Reporting",
-    Reporting: "Review",
-    Review: "Client Spv Review",
-    "Client Spv Review": "Chief Eng Review",
+  if(!ackTask.value) return
+  const nextStatus: Record<string,string> = {
+    "Waiting":          "Process",
+    "Process":          "Reporting",
+    "Reporting":        "Review",
+    "Review":           "Client Spv Review",
+    "Client Spv Review":"Chief Eng Review",
     "Chief Eng Review": "Finish",
-  };
-  const idx = tasks.value.findIndex((t) => t.id === ackTask.value.id);
-  if (idx >= 0)
-    tasks.value[idx].status =
-      nextStatus[ackTask.value.status] ?? ackTask.value.status;
-  showAckModal.value = false;
+  }
+  const idx = tasks.value.findIndex(t=>t.id===ackTask.value.id)
+  if(idx>=0) tasks.value[idx].status = nextStatus[ackTask.value.status] ?? ackTask.value.status
+  showAckModal.value=false
 }
 
 function rejectTask() {
-  if (!ackTask.value) return;
-  const idx = tasks.value.findIndex((t) => t.id === ackTask.value.id);
-  if (idx >= 0) tasks.value[idx].status = "Reject";
-  showAckModal.value = false;
+  if(!ackTask.value) return
+  const idx = tasks.value.findIndex(t=>t.id===ackTask.value.id)
+  if(idx>=0) tasks.value[idx].status = "Reject"
+  showAckModal.value=false
 }
 
 // ── Edit Modal ────────────────────────────────────────────────
-const showEditModal = ref(false);
-const editingTask = ref<any>(null);
-const editForm = ref({ technician: "", note: "", startDate: "", type: "" });
+const showEditModal  = ref(false)
+const editingTask    = ref<any>(null)
+const editForm = ref({ technician:"", note:"", startDate:"", type:"" })
 
 function openEdit(task: any) {
-  editingTask.value = task;
-  editForm.value = {
-    technician: task.technician,
-    note: task.note,
-    startDate: task.startDate,
-    type: task.type,
-  };
-  showEditModal.value = true;
+  editingTask.value=task
+  editForm.value={ technician:task.technician, note:task.note, startDate:task.startDate, type:task.type }
+  showEditModal.value=true
 }
 function saveEdit() {
-  const idx = tasks.value.findIndex((t) => t.id === editingTask.value.id);
-  if (idx >= 0) Object.assign(tasks.value[idx], editForm.value);
-  showEditModal.value = false;
+  const idx = tasks.value.findIndex(t=>t.id===editingTask.value.id)
+  if(idx>=0) Object.assign(tasks.value[idx], editForm.value)
+  showEditModal.value=false
 }
 
-function printTask(task: any) {
-  alert(`Printing report for ${task.id}...`);
-}
+function printTask(task: any) { alert(`Printing report for ${task.id}...`) }
 </script>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.15s ease;
-}
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
+.modal-enter-active,.modal-leave-active{transition:opacity .15s ease}
+.modal-enter-from,.modal-leave-to{opacity:0}
+.collapse-enter-active,.collapse-leave-active{transition:all .2s ease;overflow:hidden}
+.collapse-enter-from,.collapse-leave-to{opacity:0;max-height:0}
+.collapse-enter-to,.collapse-leave-from{opacity:1;max-height:800px}
 </style>
