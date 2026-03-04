@@ -11,7 +11,7 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = computed(() => !!token.value);
   const userRole = computed(() => user.value?.role ?? null);
   const fullName = computed(() =>
-    user.value ? `${user.value.firstName} ${user.value.lastName}` : ""
+    user.value ? `${user.value.firstName} ${user.value.lastName}` : "",
   );
 
   async function login(email: string, password: string) {
@@ -33,7 +33,8 @@ export const useAuthStore = defineStore("auth", () => {
       const res = await api.get("/auth/me");
       user.value = res.data.data;
     } catch {
-      logout();
+      // Don't logout here — API might just be temporarily unavailable
+      // Only logout on explicit 401 (handled by axios interceptor)
     }
   }
 
@@ -49,13 +50,26 @@ export const useAuthStore = defineStore("auth", () => {
 
   function hasMinRole(minRole: string): boolean {
     const hierarchy: Record<string, number> = {
-      VIEWER: 1, TECHNICIAN: 2, MANAGER: 3, ADMIN: 4, SUPER_ADMIN: 5,
+      VIEWER: 1,
+      TECHNICIAN: 2,
+      MANAGER: 3,
+      ADMIN: 4,
+      SUPER_ADMIN: 5,
     };
     return (hierarchy[userRole.value ?? ""] ?? 0) >= (hierarchy[minRole] ?? 0);
   }
 
   return {
-    token, user, loading, isAuthenticated, userRole, fullName,
-    login, logout, fetchMe, hasRole, hasMinRole,
+    token,
+    user,
+    loading,
+    isAuthenticated,
+    userRole,
+    fullName,
+    login,
+    logout,
+    fetchMe,
+    hasRole,
+    hasMinRole,
   };
 });
