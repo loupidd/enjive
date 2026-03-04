@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --color-primary:  #02314E;
+    --color-brown:    #7A4A00;
+    --color-caramel:  #FFC677;
+    --color-surface:  #0d1c27;
+    --color-ink:      #333333;
+  }
+
+  body {
+    @apply bg-surface-950 text-surface-50 font-sans antialiased;
+  }
+
+  * {
+    @apply border-white/10;
+  }
+
+  ::-webkit-scrollbar        { @apply w-1.5 h-1.5; }
+  ::-webkit-scrollbar-track  { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb  { @apply bg-white/10 rounded-full; }
+}
+
+@layer components {
+  /* ── Cards ────────────────────────────────────────────── */
+  .card {
+    @apply bg-denim-800/60 border border-denim-700/40 rounded-xl p-5
+           backdrop-blur-sm;
+  }
+
+  /* ── Buttons ──────────────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2
+           bg-caramel hover:bg-caramel-600
+           text-denim-950 text-sm font-semibold rounded-lg
+           transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-caramel/50
+           focus:ring-offset-2 focus:ring-offset-surface-950
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2
+           bg-denim-700/50 hover:bg-denim-700
+           text-surface-50 text-sm font-medium rounded-lg
+           border border-denim-600/50
+           transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-denim-400/30
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2
+           bg-red-600/15 hover:bg-red-600/25
+           text-red-400 text-sm font-medium rounded-lg
+           border border-red-500/20 transition-colors duration-150;
+  }
+
+  /* ── Form inputs ──────────────────────────────────────── */
+  .input {
+    @apply w-full bg-denim-900 border border-denim-700/50 rounded-lg
+           px-3 py-2 text-sm text-surface-50
+           placeholder:text-denim-300/40
+           focus:outline-none focus:ring-2 focus:ring-caramel/40
+           focus:border-caramel/50 transition-colors duration-150;
+  }
+
+  .label {
+    @apply block text-xs font-medium text-denim-200/70 mb-1.5 tracking-wide;
+  }
+
+  /* ── Accent line ──────────────────────────────────────── */
+  .accent-bar {
+    @apply h-0.5 w-8 bg-caramel rounded-full;
+  }
+}

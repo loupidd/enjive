@@ -1,0 +1,313 @@
+// Enjive CMMS – Prisma Schema
+// datasource: MySQL
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ─────────────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  TECHNICIAN
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum EquipmentStatus {
+  OPERATIONAL
+  UNDER_MAINTENANCE
+  OUT_OF_SERVICE
+  DECOMMISSIONED
+}
+
+enum WorkOrderStatus {
+  DRAFT
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+  CLOSED
+}
+
+enum WorkOrderPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum WorkOrderType {
+  PREVENTIVE
+  CORRECTIVE
+  INSPECTION
+  EMERGENCY
+}
+
+enum TroubleStatus {
+  OPEN
+  ACKNOWLEDGED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REJECTED
+}
+
+enum TroubleSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ScheduleFrequency {
+  ONCE
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+}
+
+enum ActivityType {
+  MAINTENANCE
+  INSPECTION
+  CALIBRATION
+  CLEANING
+  REPAIR
+  REPLACEMENT
+  LUBRICATION
+  TESTING
+}
+
+// ─── Models ────────────────────────────────────────────────────
+
+model User {
+  id             String     @id @default(uuid())
+  email          String     @unique
+  passwordHash   String
+  firstName      String
+  lastName       String
+  role           Role       @default(TECHNICIAN)
+  status         UserStatus @default(ACTIVE)
+  phone          String?
+  avatarUrl      String?
+  lastLoginAt    DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  deletedAt      DateTime?
+
+  assignedWorkOrders WorkOrder[] @relation("AssignedTo")
+  createdWorkOrders  WorkOrder[] @relation("CreatedBy")
+  troubleReports     TroubleReport[]
+  workReports        WorkReport[]
+  activityLogs       ActivityLog[]
+
+  @@map("users")
+}
+
+model Equipment {
+  id             String          @id @default(uuid())
+  code           String          @unique
+  name           String
+  description    String?         @db.Text
+  category       String
+  location       String?
+  manufacturer   String?
+  model          String?
+  serialNumber   String?
+  purchaseDate   DateTime?
+  warrantyExpiry DateTime?
+  status         EquipmentStatus @default(OPERATIONAL)
+  imageUrl       String?
+  specifications Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+
+  workOrders     WorkOrder[]
+  schedules      Schedule[]
+  troubleReports TroubleReport[]
+  activityLogs   ActivityLog[]
+
+  @@map("equipment")
+}
+
+model WorkOrder {
+  id          String            @id @default(uuid())
+  code        String            @unique
+  title       String
+  description String?           @db.Text
+  type        WorkOrderType     @default(CORRECTIVE)
+  status      WorkOrderStatus   @default(DRAFT)
+  priority    WorkOrderPriority @default(MEDIUM)
+
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedTo", fields: [assignedToId], references: [id])
+
+  createdById String
+  createdBy   User   @relation("CreatedBy", fields: [createdById], references: [id])
+
+  scheduleId String?
+  schedule   Schedule? @relation(fields: [scheduleId], references: [id])
+
+  troubleReportId String?
+  troubleReport   TroubleReport? @relation(fields: [troubleReportId], references: [id])
+
+  dueDate       DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  estimatedHours Float?
+  actualHours    Float?
+  notes          String?  @db.Text
+
+  workReports WorkReport[]
+  statusHistory WorkOrderStatusHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@map("work_orders")
+}
+
+model WorkOrderStatusHistory {
+  id          String          @id @default(uuid())
+  workOrderId String
+  workOrder   WorkOrder       @relation(fields: [workOrderId], references: [id])
+  fromStatus  WorkOrderStatus?
+  toStatus    WorkOrderStatus
+  changedById String
+  reason      String?
+  createdAt   DateTime        @default(now())
+
+  @@map("work_order_status_history")
+}
+
+model TroubleReport {
+  id          String          @id @default(uuid())
+  code        String          @unique
+  title       String
+  description String          @db.Text
+  severity    TroubleSeverity @default(MEDIUM)
+  status      TroubleStatus   @default(OPEN)
+
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+
+  reportedById String
+  reportedBy   User   @relation(fields: [reportedById], references: [id])
+
+  imageUrl    String?
+  resolvedAt  DateTime?
+  notes       String?  @db.Text
+
+  workOrders     WorkOrder[]
+  statusHistory  TroubleStatusHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@map("trouble_reports")
+}
+
+model TroubleStatusHistory {
+  id              String        @id @default(uuid())
+  troubleReportId String
+  troubleReport   TroubleReport @relation(fields: [troubleReportId], references: [id])
+  fromStatus      TroubleStatus?
+  toStatus        TroubleStatus
+  changedById     String
+  reason          String?
+  createdAt       DateTime      @default(now())
+
+  @@map("trouble_status_history")
+}
+
+model Schedule {
+  id          String            @id @default(uuid())
+  title       String
+  description String?           @db.Text
+  frequency   ScheduleFrequency @default(MONTHLY)
+  startDate   DateTime
+  endDate     DateTime?
+  nextRunAt   DateTime?
+  lastRunAt   DateTime?
+  isActive    Boolean           @default(true)
+
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+
+  activityType ActivityType @default(MAINTENANCE)
+  estimatedHours Float?
+
+  workOrders WorkOrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("schedules")
+}
+
+model WorkReport {
+  id          String @id @default(uuid())
+  workOrderId String
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+
+  technicianId String
+  technician   User   @relation(fields: [technicianId], references: [id])
+
+  summary      String  @db.Text
+  workDone     String  @db.Text
+  partsUsed    Json?
+  hoursSpent   Float
+  findings     String? @db.Text
+  recommendations String? @db.Text
+  attachments  Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("work_reports")
+}
+
+model ActivityLog {
+  id          String       @id @default(uuid())
+  type        ActivityType
+  description String       @db.Text
+
+  equipmentId String?
+  equipment   Equipment? @relation(fields: [equipmentId], references: [id])
+
+  performedById String
+  performedBy   User   @relation(fields: [performedById], references: [id])
+
+  performedAt DateTime @default(now())
+  duration    Float?
+  notes       String?  @db.Text
+  attachments Json?
+
+  createdAt DateTime @default(now())
+
+  @@map("activity_logs")
+}
