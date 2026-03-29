@@ -96,33 +96,6 @@
       </div>
     </div>
 
-    <!-- ── Technical Specs — top collapsible ───────────────── -->
-    <div class="card p-0 overflow-hidden">
-      <button
-        class="w-full flex items-center justify-between px-4 py-3 hover:bg-denim-700/10 transition-colors"
-        @click="showSpecs=!showSpecs"
-      >
-        <div class="flex items-center gap-2">
-          <IconSliders :size="13" class="text-caramel/60"/>
-          <span class="text-xs font-semibold text-denim-200/70 uppercase tracking-wide">Technical Specifications</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <span class="text-[10px] text-denim-200/30">{{ showSpecs ? "Collapse" : "Expand" }}</span>
-          <IconChevronDown :size="14" class="text-denim-200/40 transition-transform duration-200" :class="showSpecs?'rotate-180':''"/>
-        </div>
-      </button>
-      <Transition name="collapse">
-        <div v-if="showSpecs" class="border-t border-denim-700/20 px-4 py-3">
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-x-6 gap-y-2">
-            <div v-for="row in specRows" :key="row.label">
-              <p class="text-[10px] text-denim-200/35 leading-none mb-0.5">{{ row.label }}</p>
-              <p class="text-xs font-medium text-white">{{ row.value || "—" }}</p>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </div>
-
     <!-- ── Main 2-col layout ───────────────────────────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
@@ -168,8 +141,36 @@
         </div>
       </div>
 
-      <!-- RIGHT: Tabbed content -->
-      <div class="lg:col-span-3 space-y-0">
+      <!-- RIGHT: Specs (collapsible) + Tabbed content -->
+      <div class="lg:col-span-3 space-y-3">
+
+        <!-- Technical Specs collapsible — above tabs -->
+        <div class="card p-0 overflow-hidden">
+          <button
+            class="w-full flex items-center justify-between px-4 py-3 hover:bg-denim-700/10 transition-colors"
+            @click="showSpecs=!showSpecs"
+          >
+            <div class="flex items-center gap-2">
+              <IconSliders :size="13" class="text-caramel/60"/>
+              <span class="text-xs font-semibold text-denim-200/60 uppercase tracking-wide">Technical Specifications</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-[10px] text-denim-200/25">{{ showSpecs ? "Collapse" : "Expand" }}</span>
+              <IconChevronDown :size="14" class="text-denim-200/40 transition-transform duration-200" :class="showSpecs?'rotate-180':''"/>
+            </div>
+          </button>
+          <Transition name="collapse">
+            <div v-if="showSpecs" class="border-t border-denim-700/20 px-4 py-3">
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3">
+                <div v-for="row in specRows" :key="row.label">
+                  <p class="text-[10px] text-denim-200/35 leading-none mb-0.5">{{ row.label }}</p>
+                  <p class="text-xs font-medium text-white">{{ row.value || "—" }}</p>
+                </div>
+              </div>
+            </div>
+          </Transition>
+        </div>
+
         <div class="card p-0 overflow-hidden">
           <!-- Tab nav -->
           <div class="flex overflow-x-auto border-b border-denim-700/40 bg-denim-900/20">

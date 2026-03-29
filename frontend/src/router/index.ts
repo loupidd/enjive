@@ -20,6 +20,9 @@ const WorkOrderDetail    = () => import("@/pages/workorders/WorkOrderDetailPage.
 const TroublePage        = () => import("@/pages/trouble/TroublePage.vue");
 const ReportsPage        = () => import("@/pages/reports/ReportsPage.vue");
 const UsersPage          = () => import("@/pages/users/UsersPage.vue");
+const CompaniesPage      = () => import("@/pages/companies/CompaniesPage.vue");
+const ProfilePage        = () => import("@/pages/profile/ProfilePage.vue");
+const ErrorPage          = () => import("@/pages/error/ErrorPage.vue");
 
 const routes: RouteRecordRaw[] = [
   // Public routes
@@ -41,6 +44,7 @@ const routes: RouteRecordRaw[] = [
       { path: "work-orders",  name: "WorkOrders",   component: WorkOrdersPage },
       { path: "work-orders/:id", name: "WorkOrderDetail", component: WorkOrderDetail },
       { path: "trouble",      name: "Trouble",      component: TroublePage },
+      { path: "companies",    name: "Companies",    component: CompaniesPage },
       { path: "reports",      name: "Reports",      component: ReportsPage },
       {
         path: "users",
@@ -48,11 +52,14 @@ const routes: RouteRecordRaw[] = [
         component: UsersPage,
         meta: { requiresRole: ["ADMIN", "SUPER_ADMIN"] },
       },
+      { path: "profile", name: "Profile", component: ProfilePage },
     ],
   },
 
+  // Error page
+  { path: "/error", name: "Error", component: ErrorPage, meta: { public: true } },
   // Catch-all
-  { path: "/:pathMatch(.*)*", redirect: "/" },
+  { path: "/:pathMatch(.*)*", name: "NotFound", component: ErrorPage, meta: { public: true } },
 ];
 
 const router = createRouter({
@@ -67,7 +74,7 @@ router.beforeEach(async (to, _from, next) => {
 
   if (to.meta.public) return next();
 
-  if (!auth.isAuthenticated) return next({ name: "Login", query: { redirect: to.fullPath } });
+  if (!auth.isAuthenticated) return next({ name: "Error", query: { reason: "unauthorized" } });
 
   // Lazy-fetch user on first load — but don't block navigation if API is down
   if (!auth.user) {

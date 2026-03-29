@@ -1,0 +1,99 @@
+=======================================================================
+ENJIVE CMMS — GIT COMMIT LOG (Sessions 2–4)
+=======================================================================
+
+-----------------------------------------------------------------------
+feat: add PrintReport component with SSS logo and signature block
+-----------------------------------------------------------------------
+- Add PrintReport.vue with full A4 print layout
+- Header: SSS logo from /public/sss-logo.png with EnJive SVG fallback
+  (logo tracked via ref: null=pending, true=loaded, false=error)
+- Logo placement: frontend/public/sss-logo.png
+- Sections: Work Order info, equipment specs, work record table,
+  photo grid, thermal image grid, approval & signatures
+- Signature block uses page-break-inside: avoid so cards never
+  split across pages
+- @page margins: 20mm 18mm 22mm 18mm (clean white, no dark bleed)
+- Fix black bar in print: explicit background-color:#ffffff on
+  html/body/#app inside @media print, then * { background: transparent }
+  so only declared surfaces keep their color
+- Add breathing room: line-height 1.6, cell padding 6px 10px,
+  section title margin 20px, note box padding 8px 12px
+
+fix: QR code in signature cards — replace canvas with img tag
+-----------------------------------------------------------------------
+- Root cause: canvas drawImage with crossOrigin='anonymous' triggers
+  CORS preflight that Windows Chrome enforces; macOS Arc was lenient
+- Fix: replace <canvas> + onMounted image loader with direct <img> tag
+  pointing to api.qrserver.com — browser loads it as a passive resource,
+  no CORS restriction, works on all platforms
+- Add SVG placeholder when sig.qrData is empty
+
+feat: replace emoji equipment classification icons with SVG
+-----------------------------------------------------------------------
+- Remove ⚙️ ⚡ 📡 🏗️ 🔧 emoji from typeIcon()
+- Replace with stroke-only SVG paths per classification:
+  Mechanical  → person/gear silhouette  (blue-400)
+  Electrical  → lightning bolt          (yellow-400)
+  Electronic  → circuit-board grid      (purple-400)
+  Civil       → building outline        (green-400)
+  Others      → wrench                  (slate-400)
+- Template updated from <span>{{ icon }}</span> to inline <svg>
+
+feat: add light mode with animated toggle
+-----------------------------------------------------------------------
+- New src/stores/theme.store.ts — persists to localStorage('enjive:theme')
+  applies class="light" or class="dark" on <html>
+- main.css: full html.light block covering every Tailwind utility class
+  used across the app — bg-denim-*, text-white*, text-denim-200/*,
+  border-denim-*, hover states, table stripes, scrollbar
+- Perceptual mapping (not inversion):
+    denim-950/900 → #F0F4F8 (warm blue-gray paper)
+    denim-800     → #FFFFFF (elevated white card)
+    denim-700/600 → #E2E8F0 (muted tint for chips/rows)
+    text-white    → #0C1E2C (deep navy, same contrast family)
+    text-denim-200/x → rgba(12,30,44, x) (same alpha, dark base)
+    borders       → rgba(12,30,44, 0.09–0.16)
+- Sidebar stays dark denim in both modes (brand anchor)
+  .sidebar scope locks all text/bg/border to light values always
+- Smooth transition: 0.20s on bg/border, 0.15s on color,
+  0.08s on interactive elements
+- Grain overlay opacity reduced to 0.12 in light mode
+
+feat: animated theme toggle pill in sidebar
+-----------------------------------------------------------------------
+- Replace plain button with pill-switch: rounded track + sliding dot
+- Dot slides left (moon = dark mode) ↔ right (sun = light mode)
+- 300ms CSS transition on dot position
+- Track color: denim-700/60 in dark, caramel/30 in light
+- Dot glows blue on hover in dark mode, caramel on hover in light
+- Label: "Light Mode" / "Dark Mode" — fades in/out with sidebar
+
+feat: profile avatar → sidebar sync
+-----------------------------------------------------------------------
+- avatarUrl in AppLayout changed from local ref to computed()
+  reading auth.user?.avatarUrl so sidebar updates reactively
+- Profile page: on avatar upload, sets auth.user.avatarUrl = dataUrl
+  AND writes localStorage('enjive:avatar') as cross-session cache
+- Avatar preview pre-fills from auth store on page load
+- TODO: swap in real POST /users/me/avatar API call (marked in code)
+
+feat: add back button to profile page
+-----------------------------------------------------------------------
+- Arrow-left button in profile page header calls router.back()
+
+refactor: remove topbar/header from AppLayout
+-----------------------------------------------------------------------
+- Remove <header> element (h-16 topbar with page label, GlobalSearch,
+  date, bell icon)
+- Remove routeLabel computed, today computed, ROUTE_LABELS map
+- Remove all .topbar-search CSS
+- Matches manual edit already applied to the working tree
+
+-----------------------------------------------------------------------
+Notes for next session:
+- Wire real API for avatar upload (POST /users/me/avatar)
+- Backend integration across all pages (all data still mocked)
+- Trouble Report detail page
+- Schedule blink animation on trouble items
+=======================================================================

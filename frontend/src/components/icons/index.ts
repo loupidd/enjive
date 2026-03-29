@@ -24,7 +24,6 @@ export {
   Activity as IconActivity,
   BarChart2 as IconBarChart,
   LayoutDashboard as IconDashboard,
-  Bell as IconBell,
   ClipboardList as IconClipboard,
   AlertTriangle as IconAlertTriangle,
   AlertCircle as IconAlertCircle,
@@ -45,6 +44,7 @@ export {
   MoreHorizontal as IconMore,
   RefreshCw as IconRefresh,
   Zap as IconZap,
+  Bell as IconBell,
   Wrench as IconWrench,
   LogOut as IconLogOut,
   Menu as IconMenu,
@@ -53,4 +53,6 @@ export {
   Star as IconStar,
   Tag as IconTag,
   Hash as IconHash,
+  Phone as IconPhone,
+  Mail as IconMail,
 } from "lucide-vue-next";

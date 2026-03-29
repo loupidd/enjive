@@ -18,7 +18,7 @@
         <div class="flex items-center gap-3 min-w-0">
           <!-- Logo — file at src/assets/enjive-mark.png -->
           <div
-            class="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0 overflow-hidden p-0.5"
+            class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0 overflow-hidden p-0.5"
           >
             <img
               src="@/assets/enjive-mark.png"
@@ -73,15 +73,21 @@
       </nav>
 
       <!-- User footer -->
-      <div class="border-t border-white/5 p-2">
-        <div
+      <div class="border-t border-white/5 p-2 space-y-0.5">
+        <!-- Profile link -->
+        <RouterLink
+          to="/profile"
           class="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors group overflow-hidden"
-          @click="auth.logout()"
         >
           <div
-            class="w-7 h-7 rounded-full bg-caramel flex items-center justify-center text-[11px] font-bold text-denim-950 shrink-0"
+            class="w-7 h-7 rounded-full bg-caramel flex items-center justify-center text-[11px] font-bold text-denim-950 shrink-0 overflow-hidden"
           >
-            {{ initials }}
+            <img
+              v-if="avatarUrl"
+              :src="avatarUrl"
+              class="w-full h-full object-cover"
+            />
+            <span v-else>{{ initials }}</span>
           </div>
           <Transition name="label-fade">
             <div v-if="!collapsed" class="flex-1 min-w-0 overflow-hidden">
@@ -95,14 +101,109 @@
               </p>
             </div>
           </Transition>
-          <Transition name="label-fade">
+        </RouterLink>
+        <!-- Logout -->
+        <button
+          class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-red-500/10 cursor-pointer transition-colors group overflow-hidden w-full"
+          @click="auth.logout()"
+        >
+          <div class="w-7 h-7 flex items-center justify-center shrink-0">
             <IconLogOut
-              v-if="!collapsed"
               :size="13"
-              class="text-denim-200/30 group-hover:text-denim-200/60 shrink-0 transition-colors"
+              class="text-denim-200/25 group-hover:text-red-400 transition-colors"
             />
+          </div>
+          <Transition name="label-fade">
+            <span
+              v-if="!collapsed"
+              class="text-[11px] text-denim-200/25 group-hover:text-red-400 transition-colors font-medium"
+              >Sign Out</span
+            >
           </Transition>
-        </div>
+        </button>
+      </div>
+
+      <!-- Theme toggle — animated pill switch -->
+      <div class="px-2 pb-1">
+        <button
+          class="theme-toggle-btn flex items-center gap-2.5 px-2 py-1.5 rounded-lg w-full group overflow-hidden relative"
+          :class="theme.isDark ? 'hover:bg-white/8' : 'hover:bg-white/10'"
+          @click="theme.toggle()"
+          :title="theme.isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        >
+          <!-- Animated pill track -->
+          <div
+            class="theme-track w-9 h-5 rounded-full shrink-0 relative transition-all duration-300 border"
+            :class="
+              theme.isDark
+                ? 'bg-denim-700/60 border-denim-500/40'
+                : 'bg-caramel/30 border-caramel/50'
+            "
+          >
+            <!-- Glowing dot -->
+            <div
+              class="theme-dot absolute top-0.5 w-4 h-4 rounded-full shadow-md transition-all duration-300 flex items-center justify-center"
+              :class="
+                theme.isDark
+                  ? 'left-0.5 bg-denim-400'
+                  : 'left-[18px] bg-caramel'
+              "
+            >
+              <!-- Moon (dark mode) -->
+              <svg
+                v-if="theme.isDark"
+                width="8"
+                height="8"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="text-denim-900/70"
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+              <!-- Sun (light mode) -->
+              <svg
+                v-else
+                width="8"
+                height="8"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                class="text-denim-900"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="4"
+                  fill="currentColor"
+                  stroke="none"
+                />
+                <line x1="12" y1="2" x2="12" y2="5" />
+                <line x1="12" y1="19" x2="12" y2="22" />
+                <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" />
+                <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
+                <line x1="2" y1="12" x2="5" y2="12" />
+                <line x1="19" y1="12" x2="22" y2="12" />
+                <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" />
+                <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
+              </svg>
+            </div>
+          </div>
+          <Transition name="label-fade">
+            <span
+              v-if="!collapsed"
+              class="text-[11px] font-semibold transition-colors duration-200"
+              :class="
+                theme.isDark
+                  ? 'text-denim-200/45 group-hover:text-denim-200/70'
+                  : 'text-caramel/80 group-hover:text-caramel'
+              "
+            >
+              {{ theme.isDark ? "Light Mode" : "Dark Mode" }}
+            </span>
+          </Transition>
+        </button>
       </div>
 
       <!-- Collapse toggle -->
@@ -120,32 +221,6 @@
 
     <!-- ── Main area ─────────────────────────────────────── -->
     <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
-      <!-- Topbar -->
-      <header
-        class="h-16 shrink-0 flex items-center px-5 border-b border-white/5 bg-denim-900/60 backdrop-blur-md relative z-10"
-      >
-        <div class="flex items-center gap-3">
-          <div class="h-4 w-px bg-caramel/40 rounded-full" />
-          <h1 class="text-sm font-semibold text-white/80 tracking-wide">
-            {{ routeLabel }}
-          </h1>
-        </div>
-        <div class="ml-auto flex items-center gap-4">
-          <span class="text-[11px] text-denim-200/35 font-medium">{{
-            today
-          }}</span>
-          <!-- Notification dot placeholder -->
-          <div
-            class="w-7 h-7 rounded-lg bg-denim-700/50 flex items-center justify-center relative cursor-pointer hover:bg-denim-700 transition-colors"
-          >
-            <IconBell :size="13" class="text-denim-200/50" />
-            <span
-              class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-caramel"
-            />
-          </div>
-        </div>
-      </header>
-
       <!-- Page content with route transition -->
       <main class="flex-1 overflow-y-auto p-5 relative">
         <!-- Subtle mesh gradient bg -->
@@ -179,6 +254,7 @@ import {
   IconBuilding,
   IconBell,
 } from "@/components/icons";
+import { useThemeStore } from "@/stores/theme.store";
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -211,13 +287,12 @@ const ROUTE_LABELS: Record<string, string> = {
   "/companies": "Site",
 };
 
-const routeLabel = computed(() => {
-  const p = route.path;
-  if (p.startsWith("/equipment/detail")) return "Equipment Detail";
-  if (p.startsWith("/equipment/type")) return "Equipment List";
-  if (p.startsWith("/work-orders/")) return "Work Order Detail";
-  return ROUTE_LABELS[p] ?? "";
-});
+const theme = useThemeStore();
+
+// Avatar: prefer server-persisted URL from user object, fallback to localStorage cache
+const avatarUrl = computed(
+  () => auth.user?.avatarUrl || localStorage.getItem("enjive:avatar") || "",
+);
 
 const initials = computed(() => {
   const u = auth.user;
@@ -226,15 +301,6 @@ const initials = computed(() => {
     `${u.firstName?.[0] ?? ""}${u.lastName?.[0] ?? ""}`.toUpperCase() || "U"
   );
 });
-
-const today = computed(() =>
-  new Date().toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }),
-);
 
 // Logo: place your PNG at /public/assets/logo/enjive-mark.png
 </script>
@@ -322,5 +388,18 @@ const today = computed(() =>
 .label-fade-leave-to {
   opacity: 0;
   max-width: 0;
+}
+
+.theme-toggle-btn:hover .theme-track {
+  border-color: rgba(255, 198, 119, 0.4);
+}
+.theme-dot {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+html:not(.light) .theme-toggle-btn:hover .theme-dot {
+  box-shadow: 0 0 6px rgba(186, 219, 255, 0.4);
+}
+html.light .theme-toggle-btn:hover .theme-dot {
+  box-shadow: 0 0 8px rgba(255, 198, 119, 0.6);
 }
 </style>

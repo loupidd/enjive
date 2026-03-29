@@ -18,9 +18,13 @@ export const useAuthStore = defineStore("auth", () => {
     loading.value = true;
     try {
       const res = await api.post("/auth/login", { email, password });
-      const { token: t, user: u } = res.data.data;
+      // Backend wraps: { success, data: { token, user }, message }
+      const payload = res.data?.data ?? res.data;
+      const t: string = payload.token;
+      const u = payload.user;
+      if (!t) throw new Error("No token in login response");
       token.value = t;
-      user.value = u;
+      user.value = u ?? null;
       localStorage.setItem("enjive:token", t);
     } finally {
       loading.value = false;

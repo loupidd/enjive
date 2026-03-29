@@ -19,11 +19,17 @@ api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("enjive:token");
-      window.location.href = "/login";
+      // Don't hard-redirect on /auth/me — the router guard handles that gracefully.
+      // Only hard-redirect on 401s from other endpoints (token truly expired mid-session).
+      const url = error.config?.url ?? "";
+      const isAuthMe = url.includes("/auth/me") || url.includes("/auth/login");
+      if (!isAuthMe) {
+        localStorage.removeItem("enjive:token");
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

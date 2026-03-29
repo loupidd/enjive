@@ -60,8 +60,20 @@ export class AuthService {
   async me(userId: string) {
     const user = await prisma.user.findFirst({
       where: { id: userId, deletedAt: null },
-      omit: { passwordHash: true },
-    } as any);
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+        status: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+      },
+    });
 
     if (!user) {
       const err = new Error("User not found") as Error & { statusCode: number };

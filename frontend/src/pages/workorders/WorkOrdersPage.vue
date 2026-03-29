@@ -30,24 +30,15 @@
       </div>
     </div>
 
-    <!-- ── Filters + KPI on same row ──────────────────────── -->
+    <!-- ── Collapsible Filters ───────────────────────────────── -->
     <div class="card p-0 overflow-hidden">
       <button class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-denim-700/10 transition-colors" @click="showFilters=!showFilters">
         <div class="flex items-center gap-2">
           <IconFilter :size="13" class="text-caramel/60"/>
-          <span class="text-xs font-semibold text-denim-200/70 uppercase tracking-wide">Filters</span>
+          <span class="text-xs font-semibold text-denim-200/50 uppercase tracking-wide">Filters</span>
           <span v-if="activeFilterCount > 0" class="text-[10px] bg-caramel/20 text-caramel px-1.5 py-0.5 rounded-full font-bold">{{ activeFilterCount }} active</span>
         </div>
-        <!-- KPI badges inline with filter header -->
-        <div class="flex items-center gap-2 mr-2">
-          <div v-for="kpi in kpis" :key="kpi.label"
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs"
-            :class="kpi.border">
-            <span class="font-bold" :class="kpi.color">{{ kpi.value }}</span>
-            <span class="text-denim-200/40 hidden sm:inline">{{ kpi.label }}</span>
-          </div>
-        </div>
-        <IconChevronDown :size="14" class="text-denim-200/40 transition-transform duration-200 shrink-0" :class="showFilters?'rotate-180':''"/>
+        <IconChevronDown :size="14" class="text-denim-200/35 transition-transform duration-200" :class="showFilters?'rotate-180':''"/>
       </button>
       <Transition name="collapse">
       <div v-if="showFilters" class="border-t border-denim-700/30 px-4 pb-4 pt-3">
@@ -140,7 +131,7 @@
             >
               <!-- ID -->
               <td class="px-3 py-2.5">
-                <button class="font-mono text-[11px] text-caramel font-semibold hover:underline" @click.stop="router.push({ name:'WorkOrderDetail', params:{id:task.id} })">{{ task.id }}</button>
+                <span class="font-mono text-[11px] text-denim-200/60 font-semibold">{{ task.id }}</span>
               </td>
 
               <!-- Equipment -->
@@ -209,20 +200,41 @@
 
               <!-- ACK Button -->
               <td class="px-3 py-2.5 text-center">
-                <button
-                  v-if="canAck(task)"
-                  class="px-3 py-1 rounded-lg text-[11px] font-bold transition-all duration-150 active:scale-95"
-                  :class="ackStyle(task)"
-                  @click="openAck(task)"
-                >
-                  {{ ackLabel(task) }}
-                </button>
-                <span v-else class="text-[10px] text-denim-200/20">—</span>
+                <div class="relative inline-flex">
+                  <button
+                    v-if="canAck(task)"
+                    class="px-3 py-1 rounded-lg text-[11px] font-bold transition-all duration-150 active:scale-95 relative"
+                    :class="ackStyle(task)"
+                    @click="openAck(task)"
+                  >
+                    {{ ackLabel(task) }}
+                  </button>
+                  <!-- Urgency blink dot — shown when action needed by current user -->
+                  <span
+                    v-if="canAck(task)"
+                    class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-caramel animate-ping"
+                  />
+                  <span
+                    v-if="canAck(task)"
+                    class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-caramel"
+                  />
+                  <span v-if="!canAck(task)" class="text-[10px] text-denim-200/20">—</span>
+                </div>
               </td>
 
               <!-- Actions -->
               <td class="px-3 py-2.5">
                 <div class="flex items-center justify-center gap-1">
+                  <!-- VIEW button — always visible, urgent analytics -->
+                  <button
+                    class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all duration-150 border"
+                    :class="viewBtnStyle(task)"
+                    title="View Work Order" @click="router.push({ name:'WorkOrderDetail', params:{id:task.id} })"
+                  >
+                    <IconExternalLink :size="11"/>
+                    View
+                  </button>
+                  <!-- EDIT — only for editable statuses -->
                   <button
                     v-if="canEdit(task)"
                     class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-denim-600/60 text-denim-200/40 hover:text-white transition-colors"
@@ -230,9 +242,10 @@
                   >
                     <IconPencil :size="12"/>
                   </button>
+                  <!-- PRINT — only Finish -->
                   <button
                     v-if="task.status==='Finish'"
-                    class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-green-500/15 text-denim-200/40 hover:text-green-400 transition-colors"
+                    class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-green-500/15 text-green-500/60 hover:text-green-400 transition-colors"
                     title="Print Report" @click="printTask(task)"
                   >
                     <IconPrint :size="12"/>
@@ -376,7 +389,7 @@ import { useRouter } from "vue-router"
 const router = useRouter()
 import {
   IconFilter, IconChevronDown, IconPencil, IconPrint,
-  IconCheck, IconX, IconAlertTriangle, IconRefresh
+  IconCheck, IconX, IconAlertTriangle, IconRefresh, IconExternalLink
 } from "@/components/icons"
 
 // ── Constants ─────────────────────────────────────────────────
@@ -446,10 +459,11 @@ const totalPages  = computed(() => Math.max(1, Math.ceil(filteredTasks.value.len
 const displayedTasks = computed(() => filteredTasks.value.slice((page.value-1)*PER_PAGE, page.value*PER_PAGE))
 
 // ── KPIs ──────────────────────────────────────────────────────
+const kpiFilter = ref("")
 const kpis = computed(() => [
-  { label:"Waiting",  value: tasks.value.filter(t=>t.status==="Waiting").length,  color:"text-slate-300",  border:"border-denim-600/30 bg-denim-800/40" },
-  { label:"Active",   value: tasks.value.filter(t=>["Process","Reporting","Review","Client Spv Review","Chief Eng Review"].includes(t.status)).length, color:"text-caramel", border:"border-caramel/20 bg-caramel/5" },
-  { label:"Finished", value: tasks.value.filter(t=>t.status==="Finish").length,   color:"text-green-400",  border:"border-green-500/20 bg-green-500/5" },
+  { label:"Waiting",  value: tasks.value.filter(t=>t.status==="Waiting").length,  color:"text-slate-300",  border:"border-denim-600/30 bg-denim-800/40", key:"Waiting",  active: kpiFilter.value==="Waiting",  onClick:()=>{ kpiFilter.value = kpiFilter.value==="Waiting"?"":"Waiting"; page.value=1 } },
+  { label:"Active",   value: tasks.value.filter(t=>["Process","Reporting","Review","Client Spv Review","Chief Eng Review"].includes(t.status)).length, color:"text-caramel", border:"border-caramel/20 bg-caramel/5", key:"Active", active: kpiFilter.value==="Active", onClick:()=>{ kpiFilter.value = kpiFilter.value==="Active"?"":"Active"; page.value=1 } },
+  { label:"Finished", value: tasks.value.filter(t=>t.status==="Finish").length,   color:"text-green-400",  border:"border-green-500/20 bg-green-500/5", key:"Finished", active: kpiFilter.value==="Finished", onClick:()=>{ kpiFilter.value = kpiFilter.value==="Finished"?"":"Finished"; page.value=1 } },
   { label:"Rejected", value: tasks.value.filter(t=>t.status==="Reject").length,   color:"text-red-400",    border:"border-red-500/20 bg-red-500/5" },
 ])
 
@@ -582,7 +596,18 @@ function saveEdit() {
   showEditModal.value=false
 }
 
-function printTask(task: any) { alert(`Printing report for ${task.id}...`) }
+function viewBtnStyle(task: any) {
+  // Highlight based on whether current user has a pending action
+  if (canAck(task)) return 'bg-caramel/15 border-caramel/40 text-caramel hover:bg-caramel/25 shadow-sm shadow-caramel/10'
+  if (task.status === 'Finish') return 'bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20'
+  if (task.status === 'Reject') return 'bg-red-500/10 border-red-500/20 text-red-400/70 hover:bg-red-500/15'
+  return 'bg-denim-700/30 border-denim-600/30 text-denim-200/50 hover:text-white hover:bg-denim-700/60'
+}
+
+function printTask(task: any) {
+  // Navigate to detail page, it handles printing with the proper PDF layout
+  router.push(`/work-orders/${task.id}?print=1`)
+}
 </script>
 
 <style scoped>
