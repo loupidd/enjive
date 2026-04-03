@@ -11,10 +11,11 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --no-audit --no-fund
+RUN npm install --no-audit --no-fund --include=dev &&     npm install -g tsx
 
 COPY . .
-RUN npx prisma generate
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 3000
-CMD ["npm", "run", "dev"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

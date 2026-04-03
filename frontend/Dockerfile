@@ -11,6 +11,8 @@ COPY package*.json ./
 RUN npm install --no-audit --no-fund
 
 COPY . .
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 5173
-CMD ["npm", "run", "dev"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
