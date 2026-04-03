@@ -698,9 +698,9 @@ function addHotPoint() {
   })
 }
 
-function setThermImg(act:any, field:'imgBefore'|'imgAfter', e:Event) {
+async function setThermImg(act:any, field:'imgBefore'|'imgAfter', e:Event) {
   const f = (e.target as HTMLInputElement).files?.[0]
-  if(f) act[field] = URL.createObjectURL(f)
+  if(f) act[field] = await compressImage(f, 800)
 }
 
 // ── Report + photos ────────────────────────────────────────────
@@ -710,10 +710,11 @@ function submitReport() {
   wo.value.timeline.push({ label:"Report Submitted", color:"bg-yellow-400", date:new Date().toLocaleString(), by:wo.value.technician, note:workReportForm.value.summary })
 }
 
-function addPhotos(e:Event) {
-  const files = (e.target as HTMLInputElement).files
-  if(!files) return
-  for(const f of Array.from(files)) wo.value.photos.push({ url:URL.createObjectURL(f), note:"" })
+async function addPhotos(e:Event) {
+  const files = Array.from((e.target as HTMLInputElement).files ?? [])
+  if(!files.length) return
+  const urls = await compressImages(files)
+  urls.forEach(url => wo.value.photos.push({ url, note:"" }))
   ;(e.target as HTMLInputElement).value = ""
 }
 
