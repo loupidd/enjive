@@ -1,12 +1,14 @@
 import type { FastifyInstance } from "fastify";
-import { authenticate } from "../middlewares/auth.middleware.js";
-import { successResponse } from "../types/api.js";
+import { authenticate, requireMinRole } from "../middlewares/auth.middleware.js";
+import { scheduleController } from "../controllers/schedule.controller.js";
+import { Role } from "../types/enums.js";
 
 export async function scheduleRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", authenticate);
-  fastify.get("/", async (_req, reply) => reply.send(successResponse([], "TODO: schedule list")));
-  fastify.get("/:id", async (_req, reply) => reply.send(successResponse(null, "TODO: get schedule")));
-  fastify.post("/", async (_req, reply) => reply.status(201).send(successResponse(null, "TODO: create schedule")));
-  fastify.patch("/:id", async (_req, reply) => reply.send(successResponse(null, "TODO: update schedule")));
-  fastify.delete("/:id", async (_req, reply) => reply.send(successResponse(null, "TODO: delete schedule")));
+
+  fastify.get("/",     scheduleController.getAll);
+  fastify.get("/:id",  scheduleController.getById);
+  fastify.post("/",    { preHandler: requireMinRole(Role.MANAGER) }, scheduleController.create);
+  fastify.patch("/:id",{ preHandler: requireMinRole(Role.MANAGER) }, scheduleController.update);
+  fastify.delete("/:id",{ preHandler: requireMinRole(Role.MANAGER) }, scheduleController.delete);
 }

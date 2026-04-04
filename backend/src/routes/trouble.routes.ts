@@ -1,12 +1,15 @@
 import type { FastifyInstance } from "fastify";
-import { authenticate } from "../middlewares/auth.middleware.js";
-import { successResponse } from "../types/api.js";
+import { authenticate, requireMinRole } from "../middlewares/auth.middleware.js";
+import { troubleController } from "../controllers/trouble.controller.js";
+import { Role } from "../types/enums.js";
 
 export async function troubleRoutes(fastify: FastifyInstance) {
   fastify.addHook("preHandler", authenticate);
-  fastify.get("/", async (_req, reply) => reply.send(successResponse([], "TODO: trouble list")));
-  fastify.get("/:id", async (_req, reply) => reply.send(successResponse(null, "TODO: get trouble")));
-  fastify.post("/", async (_req, reply) => reply.status(201).send(successResponse(null, "TODO: create trouble")));
-  fastify.patch("/:id", async (_req, reply) => reply.send(successResponse(null, "TODO: update trouble")));
-  fastify.delete("/:id", async (_req, reply) => reply.send(successResponse(null, "TODO: delete trouble")));
+
+  fastify.get("/",             troubleController.getAll);
+  fastify.get("/:id",          troubleController.getById);
+  fastify.post("/",            troubleController.create);
+  fastify.patch("/:id",        { preHandler: requireMinRole(Role.TECHNICIAN) }, troubleController.update);
+  fastify.patch("/:id/status", { preHandler: requireMinRole(Role.TECHNICIAN) }, troubleController.updateStatus);
+  fastify.delete("/:id",       { preHandler: requireMinRole(Role.MANAGER) }, troubleController.delete);
 }
