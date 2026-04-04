@@ -63,7 +63,9 @@
   }
 }
 
-/* animations unchanged */
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS & GLOBAL UTILITIES
+   ═══════════════════════════════════════════════════════════ */
 .main-bg-mesh {
   position: fixed;
   top: 0;
@@ -84,204 +86,501 @@
   pointer-events: none;
   z-index: 0;
 }
+.page-enter-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.page-leave-active {
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+tbody tr {
+  animation: rowIn 0.25s ease both;
+}
+tbody tr:nth-child(1) {
+  animation-delay: 0.03s;
+}
+tbody tr:nth-child(2) {
+  animation-delay: 0.06s;
+}
+tbody tr:nth-child(3) {
+  animation-delay: 0.09s;
+}
+tbody tr:nth-child(4) {
+  animation-delay: 0.12s;
+}
+tbody tr:nth-child(5) {
+  animation-delay: 0.14s;
+}
+tbody tr:nth-child(6) {
+  animation-delay: 0.17s;
+}
+tbody tr:nth-child(7) {
+  animation-delay: 0.19s;
+}
+tbody tr:nth-child(8) {
+  animation-delay: 0.21s;
+}
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes countIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.kpi-value {
+  animation: countIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.nav-item.router-link-active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 198, 119, 0.06) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease infinite;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.btn-primary:active {
+  transform: scale(0.97);
+}
+.btn-secondary:active {
+  transform: scale(0.97);
+}
+.btn-danger:active {
+  transform: scale(0.97);
+}
+*:focus-visible {
+  outline: 2px solid rgba(255, 198, 119, 0.5);
+  outline-offset: 2px;
+}
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
 
-/* LIGHT MODE */
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ───────────────────────────────────────────────────────────────────
+   PALETTE RATIONALE
+   The goal is a calm, professional document-management feel — not
+   bright white like a consumer app. Think: premium enterprise SaaS,
+   Notion-light, Linear-light. Muted blue-gray base, off-white cards,
+   soft ink text, same caramel accent.
+
+   Base canvas:  #E8EEF4  — desaturated slate-blue, easy on eyes
+   Card surface: #F2F5F9  — slightly lighter, clear elevation
+   Elevated/hero:#FAFBFD  — near-white for modals, hero cards
+   Text primary: #1A2B3C  — dark navy ink (not harsh black)
+   Text second:  #4A6075  — medium slate (was text-denim-200/x)
+   Text muted:   #7A94A8  — subdued slate
+   Borders:      #C8D4DE  — soft blue-gray line
+   Accent:       #FFC677  — caramel unchanged, only opacity adjusts
+
+   Accent badge adjustment for light surfaces:
+   bg-green-500/10 → bg-green-500/12 with text-green-700 (not 400)
+   bg-red-500/10   → bg-red-500/10   with text-red-700
+   (Tailwind /10 on white ≈ same as /15 on dark, ratio preserved)
+   ═══════════════════════════════════════════════════════════════════ */
 
 html.light {
   color-scheme: light;
 }
 
-/* BASE */
+/* ── Full app inversion — every dark surface becomes light ─── */
+/* The root app div and all deep-nested dark surfaces */
+html.light,
+html.light body,
+html.light #app,
+html.light #app > * {
+  background-color: #f5f7fa;
+  color: #1a1a1a;
+}
+
+/* ── Base canvas ──────────────────────────────────────────── */
 html.light body {
-  background-color: #f4f7fa !important;
-  color: #0f172a !important; /* strong readable ink */
+  background-color: #f5f7fa !important;
+  color: #1a1a1a !important;
 }
 
-/* BACKGROUNDS */
+/* The root flex wrapper (AppLayout outer div) */
+html.light .flex.h-screen {
+  background-color: #f5f7fa !important;
+}
+
+/* Main content area */
+html.light main {
+  background-color: #f5f7fa !important;
+  color: #1a1a1a !important;
+}
+
+/* ── Page backgrounds ─────────────────────────────────────── */
 html.light .bg-denim-950,
-html.light .bg-surface-950 {
-  background-color: #f4f7fa !important;
+html.light .bg-surface-950,
+html.light [class*="bg-surface"] {
+  background-color: #f5f7fa !important;
 }
 
-/* surfaces (important: separation restored) */
 html.light .bg-denim-900\/60,
 html.light .bg-denim-900\/50,
 html.light .bg-denim-900\/40,
 html.light .bg-denim-900\/30,
 html.light .bg-denim-900\/20 {
-  background-color: rgba(255, 255, 255, 0.92) !important;
+  background-color: rgba(242, 245, 249, 0.9) !important;
 }
 
-/* cards */
+/* Cards / panels */
 html.light .bg-denim-800,
 html.light .bg-denim-800\/60 {
   background-color: #ffffff !important;
 }
 
-html.light .card {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 6px 16px rgba(0, 0, 0, 0.06) !important;
-}
-
-/* inner surfaces */
+/* Chips / row stripes / muted fills */
 html.light .bg-denim-700,
 html.light .bg-denim-700\/60,
 html.light .bg-denim-700\/50,
 html.light .bg-denim-700\/40 {
-  background-color: #eef2f6 !important;
+  background-color: #edf0f5 !important;
 }
-
-/* subtle layers */
 html.light .bg-denim-700\/30,
 html.light .bg-denim-700\/20 {
-  background-color: rgba(15, 23, 42, 0.04) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
 }
-
 html.light .bg-denim-700\/10 {
-  background-color: rgba(15, 23, 42, 0.02) !important;
+  background-color: rgba(0, 0, 0, 0.02) !important;
 }
 
-/* INPUT */
+html.light .bg-denim-600,
+html.light .bg-denim-600\/60,
+html.light .bg-denim-600\/50,
+html.light .bg-denim-600\/40,
+html.light .bg-denim-600\/30 {
+  background-color: #d8dde6 !important;
+}
+
+html.light .bg-denim-500 {
+  background-color: #02314e !important;
+}
+
+html.light .bg-black\/70,
+html.light .bg-black\/60,
+html.light .bg-black\/50 {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+html.light .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+html.light .bg-white\/8 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+html.light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ── Card & Input components ──────────────────────────────── */
+html.light .card {
+  background-color: #ffffff !important;
+  border-color: #d0d7de !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
 html.light .input {
   background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
+  border-color: #bec7d4 !important;
+  color: #1a1a1a !important;
 }
-
 html.light .input:hover {
-  border-color: #94a3b8 !important;
+  border-color: #8aaabe !important;
 }
-
 html.light .input::placeholder {
-  color: #94a3b8 !important; /* still readable, not washed */
+  color: #7a94a8 !important;
 }
-
 html.light .input:focus {
-  border-color: #ffc677 !important;
-  box-shadow: 0 0 0 3px rgba(255, 198, 119, 0.28) !important;
+  border-color: rgba(255, 198, 119, 0.8) !important;
+  box-shadow: 0 0 0 3px rgba(255, 198, 119, 0.16) !important;
 }
 
-/* BUTTONS */
-
-/* PRIMARY (contrast FIXED) */
-html.light .btn-primary {
-  background-color: #ffc677 !important;
-  color: #1e293b !important; /* darker text for contrast */
-}
-
-html.light .btn-primary:hover {
-  background-color: #f4b860 !important;
-}
-
-/* SECONDARY */
+/* ── Buttons ──────────────────────────────────────────────── */
 html.light .btn-secondary {
-  background-color: #e2e8f0 !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
+  background-color: #dde5ee !important;
+  border-color: #b8c8d8 !important;
+  color: #1a2b3c !important;
 }
-
 html.light .btn-secondary:hover {
-  background-color: #cbd5e1 !important;
+  background-color: #c8d4de !important;
 }
 
-/* TEXT HIERARCHY (THIS WAS YOUR BIGGEST ISSUE) */
-
-/* primary */
+/* ── Text — perceptual hierarchy preserved ────────────────── */
+/* Primary text (was pure white in dark) */
 html.light .text-white {
-  color: #0f172a !important; /* NOT gray, real readable */
-}
+  color: #1a1a1a !important;
+} /* 16.6:1 AAA */
+html.light .text-white\/80 {
+  color: #2e2e2e !important;
+} /* 13.3:1 AAA */
+html.light .text-white\/70 {
+  color: #404040 !important;
+} /* 10.7:1 AAA */
+html.light .text-white\/10 {
+  color: #cccccc !important;
+} /* decorative */
 
-/* secondary */
-html.light .text-white\/80,
+/* Secondary/muted text (was text-denim-200/x) */
 html.light .text-denim-200,
 html.light .text-denim-200\/70 {
-  color: #334155 !important;
-}
-
-/* tertiary */
-html.light .text-white\/70,
+  color: #404040 !important;
+} /* 10.7:1 AAA */
+html.light .text-denim-200\/60 {
+  color: #4d4d4d !important;
+} /*  9.3:1 AAA */
 html.light .text-denim-200\/50 {
-  color: #64748b !important;
-}
-
-/* muted */
+  color: #595959 !important;
+} /*  7.0:1 AAA */
 html.light .text-denim-200\/40 {
-  color: #94a3b8 !important;
-}
-
+  color: #636363 !important;
+} /*  6.0:1 AAA */
+html.light .text-denim-200\/35 {
+  color: #6b6b6b !important;
+} /*  5.2:1 AA  */
 html.light .text-denim-200\/30 {
-  color: #cbd5e1 !important;
-}
-
-/* decorative only */
+  color: #717171 !important;
+} /*  4.6:1 AA  */
+html.light .text-denim-200\/25 {
+  color: #7a7a7a !important;
+} /*  4.0:1 large*/
 html.light .text-denim-200\/20 {
-  color: #e2e8f0 !important;
+  color: #8a8a8a !important;
+} /* 3.4:1 deco */
+html.light .text-denim-200\/15 {
+  color: #9e9e9e !important;
+} /* 2.6:1 deco */
+html.light .text-denim-100\/70 {
+  color: #404040 !important;
+} /* 10.7:1 AAA */
+html.light .text-denim-100\/60 {
+  color: #595959 !important;
+} /*  7.0:1 AAA */
+html.light .text-denim-100\/50 {
+  color: #717171 !important;
+} /*  4.6:1 AA  */
+html.light .text-denim-950 {
+  color: #fafbfc !important;
 }
 
-/* ACCENT (important fix) */
-html.light .text-caramel {
-  color: #d97706 !important; /* darker caramel for readability */
+/* ── Accent color adjustments for light surfaces ──────────── */
+/* Caramel — mostly fine, just reduce some opacity */
+html.light .bg-caramel\/5 {
+  background-color: rgba(255, 198, 119, 0.1) !important;
+}
+html.light .bg-caramel\/10 {
+  background-color: rgba(255, 198, 119, 0.14) !important;
+}
+html.light .bg-caramel\/12 {
+  background-color: rgba(255, 198, 119, 0.16) !important;
+}
+html.light .bg-caramel\/15 {
+  background-color: rgba(255, 198, 119, 0.18) !important;
+}
+html.light .bg-caramel\/20 {
+  background-color: rgba(255, 198, 119, 0.22) !important;
+}
+html.light .bg-caramel\/40 {
+  background-color: rgba(255, 198, 119, 0.4) !important;
 }
 
-/* STATUS COLORS (kept readable) */
+/* Status badge text — on light surfaces /10 bg needs darker text */
+/* WCAG AA on white: green 7.2:1, red 5.3:1, amber 8.3:1, blue 7.4:1, purple 9.8:1 */
 html.light .text-green-400 {
+  color: #166534 !important;
+} /* 7.2:1 */
+html.light .text-green-300 {
   color: #166534 !important;
 }
 html.light .text-red-400 {
   color: #991b1b !important;
-}
-html.light .text-blue-400 {
-  color: #1e40af !important;
+} /* 5.3:1 */
+html.light .text-red-300 {
+  color: #991b1b !important;
 }
 html.light .text-yellow-400 {
   color: #78350f !important;
+} /* 8.3:1 */
+html.light .text-yellow-300 {
+  color: #78350f !important;
+}
+html.light .text-blue-400 {
+  color: #1e40af !important;
+} /* 7.4:1 */
+html.light .text-blue-300 {
+  color: #1e40af !important;
+}
+html.light .text-purple-400 {
+  color: #581c87 !important;
+} /* 9.8:1 */
+html.light .text-purple-300 {
+  color: #581c87 !important;
 }
 
-/* BORDERS */
-html.light .border-white\/10,
-html.light .border-denim-700\/40 {
-  border-color: #e2e8f0 !important;
+/* Status badge backgrounds — slightly stronger on light */
+html.light .bg-green-500\/10,
+html.light .bg-green-500\/5 {
+  background-color: rgba(22, 163, 74, 0.1) !important;
+}
+html.light .bg-green-500\/15,
+html.light .bg-green-400\/15 {
+  background-color: rgba(22, 163, 74, 0.12) !important;
+}
+html.light .bg-green-500\/20,
+html.light .bg-green-400\/20 {
+  background-color: rgba(22, 163, 74, 0.14) !important;
 }
 
-html.light .border-denim-600\/50 {
-  border-color: #cbd5e1 !important;
+html.light .bg-red-500\/10,
+html.light .bg-red-500\/5 {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+html.light .bg-red-500\/15,
+html.light .bg-red-400\/15 {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+}
+html.light .bg-red-500\/20 {
+  background-color: rgba(239, 68, 68, 0.14) !important;
 }
 
-/* HOVER */
-html.light .hover\:bg-denim-700:hover {
-  background-color: rgba(15, 23, 42, 0.05) !important;
+html.light .bg-yellow-400\/10,
+html.light .bg-yellow-500\/10 {
+  background-color: rgba(234, 179, 8, 0.1) !important;
+}
+html.light .bg-yellow-300\/15,
+html.light .bg-yellow-400\/15,
+html.light .bg-yellow-500\/15 {
+  background-color: rgba(234, 179, 8, 0.12) !important;
 }
 
-html.light .hover\:bg-white\/10:hover {
-  background-color: rgba(15, 23, 42, 0.05) !important;
+html.light .bg-blue-500\/5,
+html.light .bg-blue-500\/10 {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+html.light .bg-blue-500\/15,
+html.light .bg-blue-400\/15 {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+html.light .bg-blue-500\/20 {
+  background-color: rgba(59, 130, 246, 0.14) !important;
 }
 
-/* TABLE */
+html.light .bg-purple-500\/10,
+html.light .bg-purple-400\/15 {
+  background-color: rgba(168, 85, 247, 0.1) !important;
+}
+html.light .bg-purple-500\/15 {
+  background-color: rgba(168, 85, 247, 0.12) !important;
+}
+
+/* ── Borders ──────────────────────────────────────────────── */
+html.light .border-white\/5,
+html.light .border-white\/10 {
+  border-color: #c8d4de !important;
+}
+html.light .border-denim-700\/40,
+html.light .border-denim-700\/30,
+html.light .border-denim-700\/20,
+html.light .border-denim-700\/15,
+html.light .border-denim-700\/10 {
+  border-color: #c8d4de !important;
+}
+html.light .border-denim-600\/50,
+html.light .border-denim-600\/40,
+html.light .border-denim-600\/30 {
+  border-color: #b8c8d8 !important;
+}
+html.light .border-denim-800 {
+  border-color: #c8d4de !important;
+}
+
+/* ── Hover states ─────────────────────────────────────────── */
+html.light .hover\:bg-white\/10:hover,
+html.light .hover\:bg-white\/5:hover {
+  background-color: rgba(26, 43, 60, 0.05) !important;
+}
+html.light .hover\:bg-denim-700:hover,
+html.light .hover\:bg-denim-700\/70:hover,
+html.light .hover\:bg-denim-700\/40:hover,
+html.light .hover\:bg-denim-700\/20:hover,
+html.light .hover\:bg-denim-700\/15:hover,
+html.light .hover\:bg-denim-700\/10:hover {
+  background-color: rgba(26, 43, 60, 0.06) !important;
+}
+html.light .hover\:bg-denim-600\/60:hover,
+html.light .hover\:bg-denim-600\/50:hover {
+  background-color: #c8d4de !important;
+}
+html.light .hover\:bg-denim-500:hover {
+  background-color: #02314e !important;
+}
+html.light .hover\:text-white:hover {
+  color: #1a2b3c !important;
+}
+
+/* ── Tables ───────────────────────────────────────────────── */
 html.light tbody tr:nth-child(even) {
-  background-color: rgba(15, 23, 42, 0.02) !important;
+  background-color: rgba(26, 43, 60, 0.025) !important;
 }
-
 html.light tbody tr:hover {
-  background-color: rgba(15, 23, 42, 0.06) !important;
+  background-color: rgba(26, 43, 60, 0.05) !important;
 }
 
-/* SCROLL */
-html.light ::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.2);
-}
-html.light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.3);
-}
-
-/* mesh */
+/* ── Background mesh & grain ─────────────────────────────── */
 html.light .main-bg-mesh {
   background:
     radial-gradient(
       ellipse at 80% 10%,
-      rgba(2, 49, 78, 0.05) 0%,
+      rgba(2, 49, 78, 0.04) 0%,
       transparent 60%
     ),
     radial-gradient(
@@ -290,22 +589,142 @@ html.light .main-bg-mesh {
       transparent 50%
     ) !important;
 }
+html.light .grain-overlay {
+  opacity: 0.1 !important;
+}
 
-/* scrollbar */
+/* ── Scrollbar ────────────────────────────────────────────── */
 html.light ::-webkit-scrollbar-thumb {
-  background: rgba(26, 43, 60, 0.18);
+  background: rgba(0, 0, 0, 0.14);
 }
 html.light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(26, 43, 60, 0.28);
+  background: rgba(0, 0, 0, 0.24);
 }
 
-/* sidebar untouched */
+/* ── Mobile bottom nav in light mode ────────────────────────── */
+html.light .mobile-bottom-nav {
+  background: rgba(245, 247, 250, 0.95) !important;
+  border-color: #d0d7de !important;
+}
+html.light .mobile-nav-item {
+  color: #717171 !important;
+}
+html.light .mobile-nav-item.router-link-active {
+  color: #c47f00 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SIDEBAR — always dark denim, always light text, both modes
+   Uses doubled specificity (html.light .sidebar AND just .sidebar)
+   so it defeats html.light .bg-denim-700/x etc.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Dark navy background — locked in both modes */
 .sidebar,
 html.light .sidebar {
   background-color: #011525 !important;
 }
 
-/* transitions untouched */
+/* All text inside sidebar stays light */
+.sidebar .text-white,
+.sidebar .text-white\/80,
+.sidebar .text-white\/70,
+html.light .sidebar .text-white,
+html.light .sidebar .text-white\/80,
+html.light .sidebar .text-white\/70 {
+  color: #f0f6ff !important;
+}
+
+.sidebar .text-denim-200,
+.sidebar .text-denim-200\/70,
+.sidebar .text-denim-200\/60,
+.sidebar .text-denim-200\/50,
+html.light .sidebar .text-denim-200,
+html.light .sidebar .text-denim-200\/70,
+html.light .sidebar .text-denim-200\/60,
+html.light .sidebar .text-denim-200\/50 {
+  color: rgba(186, 219, 255, 0.55) !important;
+}
+
+.sidebar .text-denim-200\/40,
+html.light .sidebar .text-denim-200\/40 {
+  color: rgba(186, 219, 255, 0.4) !important;
+}
+
+.sidebar .text-denim-200\/30,
+.sidebar .text-denim-200\/25,
+html.light .sidebar .text-denim-200\/30,
+html.light .sidebar .text-denim-200\/25 {
+  color: rgba(186, 219, 255, 0.28) !important;
+}
+
+.sidebar .text-denim-200\/20,
+html.light .sidebar .text-denim-200\/20 {
+  color: rgba(186, 219, 255, 0.2) !important;
+}
+
+/* All backgrounds inside sidebar stay dark */
+.sidebar .bg-denim-700\/40,
+.sidebar .bg-denim-700\/30,
+.sidebar .bg-denim-700\/20,
+.sidebar .bg-denim-700\/10,
+html.light .sidebar .bg-denim-700\/40,
+html.light .sidebar .bg-denim-700\/30,
+html.light .sidebar .bg-denim-700\/20,
+html.light .sidebar .bg-denim-700\/10 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.sidebar .bg-denim-600\/60,
+.sidebar .bg-denim-600\/40,
+.sidebar .bg-denim-600\/30,
+html.light .sidebar .bg-denim-600\/60,
+html.light .sidebar .bg-denim-600\/40,
+html.light .sidebar .bg-denim-600\/30 {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Borders inside sidebar stay faint white */
+.sidebar .border-white\/5,
+.sidebar .border-white\/10,
+html.light .sidebar .border-white\/5,
+html.light .sidebar .border-white\/10 {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+.sidebar .border-denim-700\/40,
+.sidebar .border-denim-700\/30,
+.sidebar .border-denim-600\/40,
+html.light .sidebar .border-denim-700\/40,
+html.light .sidebar .border-denim-700\/30,
+html.light .sidebar .border-denim-600\/40 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Hover inside sidebar */
+.sidebar .hover\:bg-white\/10:hover,
+.sidebar .hover\:bg-white\/5:hover,
+html.light .sidebar .hover\:bg-white\/10:hover,
+html.light .sidebar .hover\:bg-white\/5:hover {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+.sidebar .hover\:bg-denim-700\/40:hover,
+.sidebar .hover\:bg-denim-700\/10:hover,
+html.light .sidebar .hover\:bg-denim-700\/40:hover,
+html.light .sidebar .hover\:bg-denim-700\/10:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Caramel accent stays vivid in sidebar */
+.sidebar .text-caramel\/60,
+html.light .sidebar .text-caramel\/60 {
+  color: rgba(255, 198, 119, 0.6) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODE TRANSITION
+   ═══════════════════════════════════════════════════════════ */
 body,
 .card,
 .input,
@@ -324,4 +743,80 @@ button,
 a,
 [role="button"] {
   transition-duration: 0.08s !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE OPTIMISATIONS
+   ══════════════════════════════════════════════════════════ */
+
+/* Larger tap targets on mobile */
+@media (max-width: 767px) {
+  /* Buttons */
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    min-height: 44px;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  /* Inputs */
+  .input {
+    min-height: 44px;
+    font-size: 16px !important; /* prevents iOS zoom on focus */
+  }
+
+  /* Cards */
+  .card {
+    padding: 1rem;
+    border-radius: 0.875rem;
+  }
+
+  /* Table: allow horizontal scroll instead of squishing */
+  .card table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Modals: full-screen sheet on mobile */
+  .modal-sheet {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    max-width: 100% !important;
+    border-radius: 1.25rem 1.25rem 0 0 !important;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  /* Page title */
+  h2.text-xl {
+    font-size: 1.125rem;
+  }
+
+  /* KPI grid: 2 cols always on mobile */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Scrollbar: hide on mobile (touch scroll) */
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+/* Safe area for devices with home indicator */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Mobile nav active indicator */
+@media (max-width: 767px) {
+  .router-link-active .mobile-nav-icon {
+    transform: translateY(-1px);
+    transition: transform 0.15s ease;
+  }
 }
