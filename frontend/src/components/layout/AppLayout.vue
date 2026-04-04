@@ -4,9 +4,23 @@
     <div class="grain-overlay pointer-events-none" />
 
     <!-- ── Sidebar ───────────────────────────────────────── -->
+    <!-- Mobile overlay when sidebar open -->
+    <div
+      v-if="!collapsed && isMobile"
+      class="fixed inset-0 bg-black/50 z-20 md:hidden"
+      @click="collapsed = true"
+    />
+
     <aside
       class="sidebar relative flex flex-col shrink-0 bg-denim-500 z-30 transition-all duration-300 ease-in-out"
-      :class="collapsed ? 'w-[60px]' : 'w-[220px]'"
+      :class="[
+        collapsed ? 'w-[60px]' : 'w-[220px]',
+        isMobile
+          ? collapsed
+            ? '-translate-x-full absolute h-full'
+            : 'absolute h-full translate-x-0 shadow-2xl'
+          : '',
+      ]"
     >
       <!-- Diagonal texture pattern -->
       <div class="sidebar-texture pointer-events-none" />
@@ -129,7 +143,11 @@
           class="theme-toggle-btn flex items-center gap-2.5 px-2 py-1.5 rounded-lg w-full group overflow-hidden relative"
           :class="theme.isDark ? 'hover:bg-white/8' : 'hover:bg-white/10'"
           @click="theme.toggle()"
-          :title="theme.isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+          :title="
+            theme.isDark
+              ? 'Currently: Dark — click for Light'
+              : 'Currently: Light — click for Dark'
+          "
         >
           <!-- Animated pill track -->
           <div
@@ -200,7 +218,7 @@
                   : 'text-caramel/80 group-hover:text-caramel'
               "
             >
-              {{ theme.isDark ? "Light Mode" : "Dark Mode" }}
+              {{ theme.isDark ? "Dark" : "Light" }}
             </span>
           </Transition>
         </button>
@@ -220,9 +238,52 @@
     </aside>
 
     <!-- ── Main area ─────────────────────────────────────── -->
-    <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+    <div
+      class="flex flex-col flex-1 min-w-0 overflow-hidden"
+      :class="isMobile ? 'w-full' : ''"
+    >
+      <!-- Mobile top bar (hamburger + page title) -->
+      <div
+        v-if="isMobile"
+        class="flex items-center gap-3 px-4 py-3 border-b border-white/5 bg-denim-900/60 backdrop-blur-md shrink-0"
+      >
+        <button
+          class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
+          @click="collapsed = !collapsed"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            class="text-denim-200/70"
+          >
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <div
+            class="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center overflow-hidden p-0.5"
+          >
+            <img
+              src="@/assets/enjive-mark.png"
+              alt="E"
+              class="w-full h-full object-contain"
+            />
+          </div>
+          <span class="text-sm font-bold text-white tracking-tight"
+            >EnJive</span
+          >
+        </div>
+      </div>
+
       <!-- Page content with route transition -->
-      <main class="flex-1 overflow-y-auto p-5 relative">
+      <main class="flex-1 overflow-y-auto p-5 relative pb-20 md:pb-5">
         <!-- Subtle mesh gradient bg -->
         <div class="main-bg-mesh pointer-events-none" />
         <RouterView v-slot="{ Component }">
@@ -231,13 +292,43 @@
           </Transition>
         </RouterView>
       </main>
+
+      <!-- ── Mobile bottom navigation ────────────────────── -->
+      <nav
+        v-if="isMobile"
+        class="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-white/8 bg-denim-900/95 backdrop-blur-xl px-2 py-1.5 safe-area-bottom"
+      >
+        <RouterLink
+          v-for="item in MOBILE_NAV"
+          :key="item.to"
+          :to="item.to"
+          class="mobile-nav-item flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-150 min-w-[52px]"
+          :class="
+            $route.path.startsWith(item.to)
+              ? 'text-caramel'
+              : 'text-denim-200/40'
+          "
+        >
+          <div class="relative">
+            <component :is="item.icon" :size="20" stroke-width="1.8" />
+            <span
+              v-if="item.badge"
+              class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center"
+              >{{ item.badge }}</span
+            >
+          </div>
+          <span class="text-[9px] font-medium leading-none">{{
+            item.label
+          }}</span>
+        </RouterLink>
+      </nav>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { RouterView, useRoute } from "vue-router";
+import { computed, ref, onMounted, onUnmounted } from "vue";
+import { RouterView } from "vue-router";
 import { useAuthStore } from "@/stores/auth.store";
 import NavItem from "@/components/layout/NavItem.vue";
 import {
@@ -252,12 +343,10 @@ import {
   IconActivity,
   IconUsers,
   IconBuilding,
-  IconBell,
 } from "@/components/icons";
 import { useThemeStore } from "@/stores/theme.store";
 
 const auth = useAuthStore();
-const route = useRoute();
 const collapsed = ref(false);
 
 const NAV_MAIN = [
@@ -275,19 +364,24 @@ const NAV_ADMIN = [
   { to: "/companies", icon: IconBuilding, label: "Site" },
 ];
 
-const ROUTE_LABELS: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/schedule": "Schedule",
-  "/work-orders": "Task",
-  "/trouble": "Trouble Reports",
-  "/reports": "Graph",
-  "/equipment": "Equipment",
-  "/activities": "Activity",
-  "/users": "Users",
-  "/companies": "Site",
-};
-
 const theme = useThemeStore();
+
+// Mobile detection
+const isMobile = ref(window.innerWidth < 768);
+function onResize() {
+  isMobile.value = window.innerWidth < 768;
+}
+
+// Auto-collapse sidebar on mobile
+if (isMobile.value) collapsed.value = true;
+
+const MOBILE_NAV = [
+  { to: "/dashboard", icon: IconDashboard, label: "Home" },
+  { to: "/work-orders", icon: IconClipboard, label: "Tasks" },
+  { to: "/trouble", icon: IconAlertTriangle, label: "Trouble", badge: 3 },
+  { to: "/equipment", icon: IconCpu, label: "Equipment" },
+  { to: "/schedule", icon: IconCalendar, label: "Schedule" },
+];
 
 // Avatar: prefer server-persisted URL from user object, fallback to localStorage cache
 const avatarUrl = computed(
@@ -303,6 +397,9 @@ const initials = computed(() => {
 });
 
 // Logo: place your PNG at /public/assets/logo/enjive-mark.png
+
+onMounted(() => window.addEventListener("resize", onResize));
+onUnmounted(() => window.removeEventListener("resize", onResize));
 </script>
 
 <style scoped>
@@ -401,5 +498,34 @@ html:not(.light) .theme-toggle-btn:hover .theme-dot {
 }
 html.light .theme-toggle-btn:hover .theme-dot {
   box-shadow: 0 0 8px rgba(255, 198, 119, 0.6);
+}
+
+/* ── Mobile bottom nav ─────────────────────────────────────── */
+.mobile-bottom-nav {
+  padding-bottom: max(6px, env(safe-area-inset-bottom));
+}
+.mobile-nav-item {
+  position: relative;
+}
+.mobile-nav-item.router-link-active {
+  color: #ffc677;
+}
+.mobile-nav-item.router-link-active::after {
+  content: none; /* disable shimmer on mobile nav */
+}
+
+/* ── Sidebar drawer on mobile ──────────────────────────────── */
+@media (max-width: 767px) {
+  .sidebar {
+    position: fixed !important;
+    height: 100% !important;
+    top: 0;
+    left: 0;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  /* pb-20 on main to clear bottom nav */
+  main {
+    padding-bottom: 5rem;
+  }
 }
 </style>
