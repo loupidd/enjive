@@ -11,15 +11,16 @@ import { errorHandler } from "./middlewares/error.middleware.js";
 import { responseLogger } from "./middlewares/logger.middleware.js";
 
 // ─── Route imports ─────────────────────────────────────────────
-import { authRoutes } from "./routes/auth.routes.js";
-import { userRoutes } from "./routes/users.routes.js";
+import { authRoutes }      from "./routes/auth.routes.js";
+import { userRoutes }      from "./routes/users.routes.js";
 import { equipmentRoutes } from "./routes/equipment.routes.js";
 import { workordersRoutes } from "./routes/workorders.routes.js";
-import { troubleRoutes } from "./routes/trouble.routes.js";
-import { scheduleRoutes } from "./routes/schedule.routes.js";
+import { troubleRoutes }   from "./routes/trouble.routes.js";
+import { scheduleRoutes }  from "./routes/schedule.routes.js";
 import { activitiesRoutes } from "./routes/activities.routes.js";
-import { reportsRoutes } from "./routes/reports.routes.js";
+import { reportsRoutes }   from "./routes/reports.routes.js";
 import { dashboardRoutes } from "./routes/dashboard.routes.js";
+import { importRoutes }   from "./routes/import.routes.js";
 
 const fastify = Fastify({
   logger: {
@@ -27,11 +28,7 @@ const fastify = Fastify({
     ...(env.NODE_ENV === "development" && {
       transport: {
         target: "pino-pretty",
-        options: {
-          colorize: true,
-          translateTime: "SYS:standard",
-          ignore: "pid,hostname",
-        },
+        options: { colorize: true, translateTime: "SYS:standard", ignore: "pid,hostname" },
       },
     }),
   },
@@ -49,6 +46,7 @@ async function bootstrap() {
 
   await fastify.register(jwt, {
     secret: env.JWT_SECRET,
+    sign: { expiresIn: "6h" },
   });
 
   await fastify.register(rateLimit, {
@@ -79,23 +77,16 @@ async function bootstrap() {
   // ── API v1 routes ─────────────────────────────────────────────
   const API_PREFIX = "/api/v1";
 
-  await fastify.register(authRoutes, { prefix: `${API_PREFIX}/auth` });
-  await fastify.register(userRoutes, { prefix: `${API_PREFIX}/users` });
-  await fastify.register(equipmentRoutes, {
-    prefix: `${API_PREFIX}/equipment`,
-  });
-  await fastify.register(workordersRoutes, {
-    prefix: `${API_PREFIX}/work-orders`,
-  });
-  await fastify.register(troubleRoutes, { prefix: `${API_PREFIX}/trouble` });
-  await fastify.register(scheduleRoutes, { prefix: `${API_PREFIX}/schedule` });
-  await fastify.register(activitiesRoutes, {
-    prefix: `${API_PREFIX}/activities`,
-  });
-  await fastify.register(reportsRoutes, { prefix: `${API_PREFIX}/reports` });
-  await fastify.register(dashboardRoutes, {
-    prefix: `${API_PREFIX}/dashboard`,
-  });
+  await fastify.register(authRoutes,       { prefix: `${API_PREFIX}/auth` });
+  await fastify.register(userRoutes,       { prefix: `${API_PREFIX}/users` });
+  await fastify.register(equipmentRoutes,  { prefix: `${API_PREFIX}/equipment` });
+  await fastify.register(workordersRoutes, { prefix: `${API_PREFIX}/work-orders` });
+  await fastify.register(troubleRoutes,    { prefix: `${API_PREFIX}/trouble` });
+  await fastify.register(scheduleRoutes,   { prefix: `${API_PREFIX}/schedule` });
+  await fastify.register(activitiesRoutes, { prefix: `${API_PREFIX}/activities` });
+  await fastify.register(reportsRoutes,    { prefix: `${API_PREFIX}/reports` });
+  await fastify.register(dashboardRoutes,  { prefix: `${API_PREFIX}/dashboard` });
+  await fastify.register(importRoutes,     { prefix: `${API_PREFIX}/import` });
 
   // ── Start ─────────────────────────────────────────────────────
   try {
