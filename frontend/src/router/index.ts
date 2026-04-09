@@ -59,7 +59,10 @@ const routes: RouteRecordRaw[] = [
   // Error page
   { path: "/error", name: "Error", component: ErrorPage, meta: { public: true } },
   // Catch-all
-  { path: "/:pathMatch(.*)*", name: "NotFound", component: ErrorPage, meta: { public: true } },
+  { path: "/unauthorized", name: "Unauthorized", component: () => import("@/pages/error/UnauthorizedPage.vue"), meta: { public: true },
+  },
+  {
+    path: "/:pathMatch(.*)*", name: "NotFound", component: ErrorPage, meta: { public: true } },
 ];
 
 const router = createRouter({
@@ -72,19 +75,29 @@ const router = createRouter({
 router.beforeEach(async (to, _from, next) => {
   const auth = useAuthStore();
 
+  // Always allow public routes
   if (to.meta.public) return next();
 
-  if (!auth.isAuthenticated) return next({ name: "Error", query: { reason: "unauthorized" } });
-
-  // Lazy-fetch user on first load — but don't block navigation if API is down
-  if (!auth.user) {
-    try { await auth.fetchMe(); } catch { /* continue anyway */ }
+  // Check session expiry client-side (6h)
+  if (auth.isSessionExpired()) {
+    auth.logout();
+    return;
   }
 
-  // Role guard — only if user loaded
+  // Not authenticated → unauthorized page
+  if (!auth.isAuthenticated) {
+    return next({ name: "Unauthorized" });
+  }
+
+  // Lazy-fetch user if we have token but no user object yet
+  if (!auth.user) {
+    await auth.fetchMe().catch(() => {});
+  }
+
+  // Role guard
   if (to.meta.requiresRole && auth.user) {
     const allowed = (to.meta.requiresRole as string[]).includes(auth.userRole ?? "");
-    if (!allowed) return next({ name: "Dashboard" });
+    if (!allowed) return next({ name: "Unauthorized" });
   }
 
   return next();
