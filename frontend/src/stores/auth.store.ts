@@ -11,14 +11,13 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = computed(() => !!token.value);
   const userRole = computed(() => user.value?.role ?? null);
   const fullName = computed(() =>
-    user.value ? `${user.value.firstName} ${user.value.lastName}` : "",
+    user.value ? `${user.value.firstName} ${user.value.lastName}` : ""
   );
 
   async function login(email: string, password: string) {
     loading.value = true;
     try {
       const res = await api.post("/auth/login", { email, password });
-      // Backend wraps: { success, data: { token, user }, message }
       const payload = res.data?.data ?? res.data;
       const t: string = payload.token;
       const u = payload.user;
@@ -26,9 +25,17 @@ export const useAuthStore = defineStore("auth", () => {
       token.value = t;
       user.value = u ?? null;
       localStorage.setItem("enjive:token", t);
+      // Store session expiry — 6 hours from now
+      const expiry = Date.now() + 6 * 60 * 60 * 1000;
+      localStorage.setItem("enjive:expiry", String(expiry));
     } finally {
       loading.value = false;
     }
+  }
+
+  function isSessionExpired(): boolean {
+    const expiry = Number(localStorage.getItem("enjive:expiry") ?? 0);
+    return expiry > 0 && Date.now() > expiry;
   }
 
   async function fetchMe() {
@@ -36,9 +43,13 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       const res = await api.get("/auth/me");
       user.value = res.data.data;
-    } catch {
-      // Don't logout here — API might just be temporarily unavailable
-      // Only logout on explicit 401 (handled by axios interceptor)
+    } catch (err: any) {
+      // 404 = user was deleted or DB was wiped — token is stale, force logout
+      if (err?.response?.status === 404) {
+        logout();
+      }
+      // 401 handled by axios interceptor
+      // Other errors = network issue, keep session alive
     }
   }
 
@@ -46,6 +57,7 @@ export const useAuthStore = defineStore("auth", () => {
     token.value = null;
     user.value = null;
     localStorage.removeItem("enjive:token");
+    localStorage.removeItem("enjive:expiry");
     window.location.href = "/login";
   }
 
@@ -55,26 +67,13 @@ export const useAuthStore = defineStore("auth", () => {
 
   function hasMinRole(minRole: string): boolean {
     const hierarchy: Record<string, number> = {
-      VIEWER: 1,
-      TECHNICIAN: 2,
-      MANAGER: 3,
-      ADMIN: 4,
-      SUPER_ADMIN: 5,
+      VIEWER: 1, TECHNICIAN: 2, MANAGER: 3, ADMIN: 4, SUPER_ADMIN: 5,
     };
     return (hierarchy[userRole.value ?? ""] ?? 0) >= (hierarchy[minRole] ?? 0);
   }
 
   return {
-    token,
-    user,
-    loading,
-    isAuthenticated,
-    userRole,
-    fullName,
-    login,
-    logout,
-    fetchMe,
-    hasRole,
-    hasMinRole,
+    token, user, loading, isAuthenticated, userRole, fullName,
+    login, logout, fetchMe, hasRole, hasMinRole, isSessionExpired,
   };
 });
