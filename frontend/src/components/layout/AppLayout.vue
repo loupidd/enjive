@@ -76,14 +76,16 @@
           <div class="h-px bg-white/5" />
         </div>
 
-        <NavItem
-          v-for="item in NAV_ADMIN"
-          :key="item.to"
-          :to="item.to"
-          :icon="item.icon"
-          :label="item.label"
-          :collapsed="collapsed"
-        />
+        <template v-if="auth.hasMinRole('ADMIN')">
+          <NavItem
+            v-for="item in NAV_ADMIN"
+            :key="item.to"
+            :to="item.to"
+            :icon="item.icon"
+            :label="item.label"
+            :collapsed="collapsed"
+          />
+        </template>
       </nav>
 
       <!-- User footer -->
@@ -218,7 +220,7 @@
                   : 'text-caramel/80 group-hover:text-caramel'
               "
             >
-              {{ theme.isDark ? "Dark" : "Light" }}
+              {{ theme.isDark ? "🌙 Dark" : "☀️ Light" }}
             </span>
           </Transition>
         </button>
