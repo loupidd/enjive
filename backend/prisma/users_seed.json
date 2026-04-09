@@ -1,0 +1,461 @@
+[
+  {
+    "email": "ace_view@sssolusindo.com",
+    "passwordHash": "$2b$10$sT4twYtzTTJ3z81GV7vCP.u//RkUKQruSxkklY387y/jRPsbqoPa6",
+    "firstName": "M",
+    "lastName": "Basir",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "admin@sssolusindo.com",
+    "passwordHash": "$2b$10$dR0dwZfj5j436QgkKonBr.4l0Uym7oCFwZTFYTFdNGGCIAHtCP90S",
+    "firstName": "Ramdhan",
+    "lastName": "Reza",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "ahmad@sssolusindo.com",
+    "passwordHash": "$2b$10$dV81/VQIo8HYIXVDsMrpjuDPJ6laaqXhNTW0cuVxPXZccBboNl.ue",
+    "firstName": "Ahmad",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "NFP",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "bintoro@sssolusindo.com",
+    "passwordHash": "$2b$10$Adp6cj1fobVAhiWG7YYqmenq8ihm3uRBfjKc9vRQzpPOQwS6EvPEm",
+    "firstName": "Bintoro",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "NFP",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "bm_nifarro@sssolusindo.com",
+    "passwordHash": "$2b$10$cl.pACUj.VfE6nHrL7nSEeTQBBQRmWfOFsqQK/xY.i8Xxkgd.pIVu",
+    "firstName": "BM",
+    "lastName": "Nifarro",
+    "role": "VIEWER",
+    "site": "NFP",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "BM_view@sssolusindo.com",
+    "passwordHash": "$2b$10$.FFAWdQFxrlWLCl9PEZG4uyvq79sgyQyD.2VjTWV9ZqfDaMyaUo72",
+    "firstName": "Syahrial",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "ce_view@sssolusindo.com",
+    "passwordHash": "$2b$10$QFdoP4M1waEL1NWJ4J2jFuFCcss5BllXsEeHm9LAU/0qfTw/AkQyG",
+    "firstName": "Agus",
+    "lastName": "Yudi",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "eda_view@sssolusindo.com",
+    "passwordHash": "$2b$10$lKRCoIlmaZvEHPyCfDaPf.lQWm4nm2.mzA4uu4B/WvYOY0Ma8y3Ce",
+    "firstName": "BM_EDA",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "febby@sssolusindo.com",
+    "passwordHash": "$2b$10$/RlD4t4XIkcll2YRkdbg2OnMnQ4gV2CnZqW12o3DIpgX.7v6CCzmC",
+    "firstName": "Febby",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "NFP",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "heruwahyu@sssolusindo.com",
+    "passwordHash": "$2b$10$c.RriRU7TxJjIhqxC59afu741z62ACMf0fjndb3nNqftcek5UCIv2",
+    "firstName": "Heru",
+    "lastName": "Wahyu",
+    "role": "VIEWER",
+    "site": "NFP",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "infokom@sssolusindo.com",
+    "passwordHash": "$2b$10$7RGFrDHAbOxwRRe9CHeWuehGLnKyZGXWn14NrqfsQ4KpbWOtMhbsK",
+    "firstName": "Infokom",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "NFP",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "manager.sumbersarana@sssolusindo.com",
+    "passwordHash": "$2b$10$p5LquSX.QRvsB5tZzvArOO5zZtIG6NJOVQ/SeGpgasfqJ7hBH1DtS",
+    "firstName": "Manager",
+    "lastName": "",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "maryono@sssolusindo.com",
+    "passwordHash": "$2b$10$xc93smhF5BQPHeUZA9bape6mCb95ALITh/gLV278L23bqXZLb/gxK",
+    "firstName": "Maryono",
+    "lastName": "",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "nifarro@sssolusindo.com",
+    "passwordHash": "$2b$10$./EucWyCHO.4PtKkBjCJ.eNDpezLzTxwiJYOVXjyUafns8jX.5wXK",
+    "firstName": "Nifarro",
+    "lastName": "Park",
+    "role": "VIEWER",
+    "site": "NFP",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "nurzaman@sssolusindo.com",
+    "passwordHash": "$2b$10$cH0Gf.OVZiuZGuS.QpjrR.UgtgCx4XInXH/64UKv9/GPNRoyBbP8u",
+    "firstName": "Nurzaman",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "NFP",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "om_view@sssolusindo.com",
+    "passwordHash": "$2b$10$Qn8cZBNf5W62o/.BsQUR8e1JpuWBNKFHSPRI2fuY/y0OU.BQbn6Wq",
+    "firstName": "Dede",
+    "lastName": "Noerjaman",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "planner@sssolusindo.com",
+    "passwordHash": "$2b$10$YRIjNACt..ooTM7TeP1Q2.3tySn81TpNbN9iYTSPPX3/NfRfJ7tYO",
+    "firstName": "Planner",
+    "lastName": "",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "planner_1@sssolusindo.com",
+    "passwordHash": "$2b$10$Z4lzKeIhK5bFwU4e502pSe55Ms6onn7MmcrKGaDa/EnBNmp/ZLp6W",
+    "firstName": "Planner",
+    "lastName": "",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "planner_2@sssolusindo.com",
+    "passwordHash": "$2b$10$ThqSpkv8AexyGXu6yXwx..G.BkVuzZKf2jCXu7yqMfS7fShnnQnxW",
+    "firstName": "Planner",
+    "lastName": "2",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "PPI_view@sssolusindo.com",
+    "passwordHash": "$2b$10$fPexUUqGFPDP5VNwdkY1N.UHDaCTK6WwST/sUl6Fthiwg7tOkr8Hy",
+    "firstName": "Djoko",
+    "lastName": "Triyono",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "qirom@sssolusindo.com",
+    "passwordHash": "$2b$10$QzKqx0pgPHDvyvyCh8jSWekjSc/Z013/oyViCkKzWgwfMlzDI3kTe",
+    "firstName": "Qirom",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "ramdani@sssolusindo.com",
+    "passwordHash": "$2b$10$./WYBXx8jgHX1yc5dL3cnebmQOXc3xQ3Ut2NuuUkVeAnQ5AGNuFO.",
+    "firstName": "Ramdani",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "rangga@sssolusindo.com",
+    "passwordHash": "$2b$10$mvFnGlqxXOJbT8RL4aiY.unNwmhrvevsXIjmV4c3wFeiV8o43Plkq",
+    "firstName": "Rangga",
+    "lastName": "Ahmad",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "s3.solusi@gmail.com",
+    "passwordHash": "$2b$10$xLbR0IlHIQAaCu4z8Gp59eo/m3AZHsRsUu9gQHhe6ZnQFU9cXVp82",
+    "firstName": "Mr",
+    "lastName": "Admin",
+    "role": "SUPER_ADMIN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "shafira@sssolusindo.com",
+    "passwordHash": "$2b$10$OArZua5i9oV5BMlAvx5Q.Ohd1l2/49y4vnlKVijkQBACUK9nMSTj2",
+    "firstName": "Safhira",
+    "lastName": "Zahra",
+    "role": "VIEWER",
+    "site": "NFP",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "soluman.eng@gmail.com",
+    "passwordHash": "$2b$10$1yKP5NZ2/3CJaPLAvqXOT.D4BVaFhGccCGooqeEF1f5jnlkLWOg/i",
+    "firstName": "Software",
+    "lastName": "Viewer",
+    "role": "MANAGER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "soluman.tec@gmail.com",
+    "passwordHash": "$2b$10$Q/vWntxPL.ChmjXKIItUEOXV44VRi/7szmFfY3WWsGUaJwe1HGopi",
+    "firstName": "Testing",
+    "lastName": "Account",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "spv.sumbersarana@sssolusindo.com",
+    "passwordHash": "$2b$10$Lt94f/ODVU9JZKmyNdHD7OUQ3BnIoTEpb/sRzkVT9FdX.dTTLqeGe",
+    "firstName": "Supervisor",
+    "lastName": "",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "suparmin@sssolusindo.com",
+    "passwordHash": "$2b$10$fFE7acY9xC3040Wv3OazSOrAtm0nsDI2IVXuTWZ20pfNSrTM40Jnu",
+    "firstName": "Suparmin",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "NFP",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "supervisor1@sssolusindo.com",
+    "passwordHash": "$2b$10$MtfRFDt3vKPJzPPKvprX0O54SCBdemai7X8osVOfhehip/PR6hbg2",
+    "firstName": "Yohanes",
+    "lastName": "",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "supervisor1_np@sssolusindo.com",
+    "passwordHash": "$2b$10$wq/pFtbA6iEDuoHivGHPCevKOwAW7WbeCp3UDUL6hEDWgMr2VBBxC",
+    "firstName": "Basuki",
+    "lastName": "",
+    "role": "MANAGER",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "syarifudin@sssolusindo.com",
+    "passwordHash": "$2b$10$v2ZFO7NHbWupcvFQPZLK2ueCt0VU58snFRPKZjcAb6b.om4cfXW8S",
+    "firstName": "Syarifudin",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "tedi@sssolusindo.com",
+    "passwordHash": "$2b$10$fDiIXiKPBi8nCkQyEYvVIu.IbBK2aX47TXI5Lp5ftQEhRCfydrKym",
+    "firstName": "Tedi",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi1.sumbersarana@sssolusindo.com",
+    "passwordHash": "$2b$10$NK.4UyKdMuSMk3Z1V62nne0tOBBcYlZ3lGdX2.fOQR80UU6YpO13S",
+    "firstName": "Teknisi",
+    "lastName": "1",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi10@sssolusindo.com",
+    "passwordHash": "$2b$10$SHLfk005WOll1aEh/drCce/nUIB0B.X9dKi8.dE0mymT5U0SeZIk2",
+    "firstName": "Ari",
+    "lastName": "Handiatna",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi11@sssolusindo.com",
+    "passwordHash": "$2b$10$Xj5lLFVltWmlQ4m7CJV28OygoRZeFO4Ub8S.J8dOqFwtDBbEfV8cy",
+    "firstName": "Rizky",
+    "lastName": "putra Utama",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi12@sssolusindo.com",
+    "passwordHash": "$2b$10$QtXYqBwenFprBv1csh4QqeFzed5DYGbSCmMiPdG.RZKJfL6bz.JnG",
+    "firstName": "*INACTIVE*",
+    "lastName": "",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "INACTIVE"
+  },
+  {
+    "email": "teknisi13@sssolusindo.com",
+    "passwordHash": "$2b$10$9jLai5pZpm9Uk4eAJZtHse95W5MylebTbCycQwGbDscKPHPlxARMG",
+    "firstName": "Ridho",
+    "lastName": "Alif Fiansyah",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi14@sssolusindo.com",
+    "passwordHash": "$2b$10$OjG019px7YYKiqmDdmFvquE4oeeMwtOicf4fXgBaXII8Na9kDeqPC",
+    "firstName": "Soleh",
+    "lastName": "",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi15@sssolusindo.com",
+    "passwordHash": "$2b$10$KHjkz6U7DgmtgJv215gjq.IDs8c.W4Up0jNQtWzu/SpYwF8RrOxvK",
+    "firstName": "Agus",
+    "lastName": "SUmanjaya",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi17@sssolusindo.com",
+    "passwordHash": "$2b$10$qV/W1C7ddnEaqzN7JYMQrOMZpU18Z9yjrVeSmh2dK1XsCN1I457DW",
+    "firstName": "Suryo",
+    "lastName": "Nugroho",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi1@sssolusindo.com",
+    "passwordHash": "$2b$10$NNAyKl71Vz3EjL.2.S5cm.RHe5sI.RmBR4x7ftb1a0BwFHAUPEUja",
+    "firstName": "Renaldy",
+    "lastName": "Alexander",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi1_np@sssolusindo.com",
+    "passwordHash": "$2b$10$oonsaImSodd6KIi6.nlhqOj1foij3ZfU9SLTmRwhAWUo8a8TJyYZi",
+    "firstName": "Fakhri",
+    "lastName": "Rabbani",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi2@sssolusindo.com",
+    "passwordHash": "$2b$10$0XqzqbSUI8UitO7g2dwxx.W9XC.JLqFg.oV.ZbKKzrz6crBqtycVC",
+    "firstName": "Fahmi",
+    "lastName": "triaudini",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi2_np@sssolusindo.com",
+    "passwordHash": "$2b$10$EnNi5Ss5wLKjCllujyNjxO7genr.wvxnlDunuXmy5j.U99Wbbkys2",
+    "firstName": "Ridwan",
+    "lastName": "Mulyadi",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi3@sssolusindo.com",
+    "passwordHash": "$2b$10$zUMh7/tOk/fxo0qDLsl48.vb/g.9Gnl0ueIer4Wjn9i10C57JhIDS",
+    "firstName": "Muhammad",
+    "lastName": "Fauzi",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi4@sssolusindo.com",
+    "passwordHash": "$2b$10$2dYC3meswRmAj8cIu0PXo.GBKGxl2M/3olMU66p6MKGvb5awxSq4u",
+    "firstName": "Fakhri",
+    "lastName": "Rabbani",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi5@sssolusindo.com",
+    "passwordHash": "$2b$10$ozfz4CS7wfOqtKadvtp5KevGZxE2NKiQBKVJNBl09GeV0khOB0Kaq",
+    "firstName": "M",
+    "lastName": "Latif",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi6@sssolusindo.com",
+    "passwordHash": "$2b$10$alnXzg4ZRr5a5h5GKTIWlufTCfTOfvgUyu5jEEHc0gVSBKjWgFqm2",
+    "firstName": "Sugianto",
+    "lastName": "",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "teknisi7@sssolusindo.com",
+    "passwordHash": "$2b$10$CiCUDv1AIpWvtUNGelCgueO2/MGsTGURhI4o.eyJ7EwCY1d2j7DYq",
+    "firstName": "Yohanes",
+    "lastName": "(Teknisi)",
+    "role": "TECHNICIAN",
+    "site": "BOTH",
+    "status": "ACTIVE"
+  },
+  {
+    "email": "wara@sssolusindo.com",
+    "passwordHash": "$2b$10$OZ/HNP8HSVDfTX43lhxuMubpn.IpjKgpVODmNtgU/sF8l893s6bAe",
+    "firstName": "Wulan",
+    "lastName": "",
+    "role": "VIEWER",
+    "site": "EDA",
+    "status": "ACTIVE"
+  }
+]
