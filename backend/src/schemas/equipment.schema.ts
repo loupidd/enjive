@@ -26,12 +26,13 @@ export const updateEquipmentSchema = createEquipmentSchema.partial().omit({ code
 
 export const equipmentQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(500).default(20),
   search: z.string().optional(),
   status: EquipmentStatusEnum.optional(),
   category: z.string().optional(),
   sortBy: z.enum(["name", "code", "createdAt", "updatedAt"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  userSite: z.string().optional(),
 });
 
 export const equipmentIdSchema = z.object({

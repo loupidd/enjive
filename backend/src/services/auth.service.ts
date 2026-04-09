@@ -21,7 +21,7 @@ export class AuthService {
       throw err;
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, email: user.email, role: user.role, site: (user as any).site ?? "EDA" };
     const token = fastify.jwt.sign(payload);
 
     await prisma.user.update({

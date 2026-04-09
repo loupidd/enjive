@@ -11,7 +11,11 @@ import { successResponse } from "../types/api.js";
 export const equipmentController = {
   async getAll(request: FastifyRequest, reply: FastifyReply) {
     const query = equipmentQuerySchema.parse(request.query);
-    const { items, meta } = await equipmentService.getAll(query);
+    const userSite = (request as any).user?.site ?? "EDA";
+    const userRole = (request as any).user?.role ?? "VIEWER";
+    // ADMIN and SUPER_ADMIN see all sites
+    const siteFilter = ["ADMIN","SUPER_ADMIN"].includes(userRole) ? "BOTH" : userSite;
+    const { items, meta } = await equipmentService.getAll({ ...query, userSite: siteFilter });
     return reply.send(successResponse(items, undefined, meta));
   },
 
