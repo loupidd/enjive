@@ -74,6 +74,13 @@
       </div>
     </div>
 
+    <!-- ── Loading / error ──────────────────────────────────────── -->
+    <div v-if="userLoading" class="flex items-center gap-2 text-xs text-denim-200/40 py-2">
+      <svg class="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      Loading users...
+    </div>
+    <div v-if="userError" class="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2">{{ userError }}</div>
+
     <!-- ── Table ────────────────────────────────────────────── -->
     <div class="card p-0 overflow-hidden">
       <div class="overflow-x-auto">
@@ -267,12 +274,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { IconPlus, IconPencil, IconTrash, IconX, IconSearch } from '@/components/icons'
+import { useUsers } from '@/composables/useUsers'
+import { useAuthStore } from '@/stores/auth.store'
 
-// ── Role check — replace with real auth store ─────────────────
-const currentRole = ref('ADMIN') // ADMIN | PLANNER | TECHNICIAN | VIEWER
-const isAdmin = computed(() => currentRole.value === 'ADMIN')
+const auth = useAuthStore()
+const currentRole = computed(() => auth.user?.role ?? 'VIEWER')
+const isAdmin = computed(() => ['ADMIN','SUPER_ADMIN'].includes(currentRole.value))
+
+const { items: apiUsers, meta: userMeta, loading: userLoading, error: userError,
+  fetch: fetchUsers, create: createUser, update: updateUser, remove: removeUser } = useUsers()
+
+onMounted(() => fetchUsers())
 
 // ── Constants ─────────────────────────────────────────────────
 const COMPANIES = [
@@ -310,37 +324,24 @@ function avatarColor(name: string) {
 }
 function initials(name: string) { return name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() }
 
-// ── Mock users ────────────────────────────────────────────────
-const users = ref([
-  { id:1,  name:'Mr Admin',            accountId:'s3.solusi',            email:'s3.solusi@gmail.com',                    company:'PT Sumber Sarana Solusindo',       level:'Administrator', position:'Administrator',          status:'Active' },
-  { id:2,  name:'Agus Yudi',           accountId:'ce_view',              email:'ce_view@sssolusindo.com',                 company:'BM Essence Darmawangsa Apartment', level:'Viewer',        position:'Viewer',                 status:'Active' },
-  { id:3,  name:'Ari Handiatna',       accountId:'teknisi10',            email:'teknisi10@sssolusindo.com',               company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Engineer',               status:'Active' },
-  { id:4,  name:'Dede Noerjaman',      accountId:'om_view',              email:'om_view@sssolusindo.com',                 company:'BM Essence Darmawangsa Apartment', level:'Viewer',        position:'Viewer',                 status:'Active' },
-  { id:5,  name:'Djoko Triyono',       accountId:'PPI_view',             email:'PPI_view@sssolusindo.com',                company:'BM Essence Darmawangsa Apartment', level:'Viewer',        position:'Viewer',                 status:'Active' },
-  { id:6,  name:'Fakhri Rabbani',      accountId:'teknisi1_np',          email:'teknisi1_np@sssolusindo.com',             company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Engineer',               status:'Active' },
-  { id:7,  name:'M Basir',             accountId:'ace_view',             email:'ace_view@sssolusindo.com',                company:'BM Essence Darmawangsa Apartment', level:'Viewer',        position:'Viewer',                 status:'Active' },
-  { id:8,  name:'M Latif',             accountId:'teknisi5',             email:'teknisi5@sssolusindo.com',                company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Engineer',               status:'Active' },
-  { id:9,  name:'Manager',             accountId:'manager.sumbersarana', email:'manager.sumbersarana@sssolusindo.com',    company:'PT Sumber Sarana Solusindo',       level:'Supervisor',    position:'Manager',                status:'Active' },
-  { id:10, name:'Muhammad Fauzi',      accountId:'teknisi3',             email:'teknisi3@sssolusindo.com',                company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Engineer',               status:'Active' },
-  { id:11, name:'Planner',             accountId:'planner',              email:'planner@sssolusindo.com',                 company:'PT Sumber Sarana Solusindo',       level:'Engineer',      position:'Planner',                status:'Active' },
-  { id:12, name:'Planner 2',           accountId:'planner_2',            email:'planner_2@sssolusindo.com',               company:'PT Sumber Sarana Solusindo',       level:'Engineer',      position:'Planner',                status:'Active' },
-  { id:13, name:'Qirom',               accountId:'qirom',                email:'qirom@sssolusindo.com',                   company:'BM Essence Darmawangsa Apartment', level:'Viewer',        position:'Engineering Supervisor', status:'Active' },
-  { id:14, name:'Ramdani',             accountId:'ramdani',              email:'ramdani@sssolusindo.com',                 company:'BM Essence Darmawangsa Apartment', level:'Viewer',        position:'Engineering Supervisor', status:'Active' },
-  { id:15, name:'Ramdhan Reza',        accountId:'admin',                email:'admin@sssolusindo.com',                   company:'PT Sumber Sarana Solusindo',       level:'Engineer',      position:'Admin Site',             status:'Active' },
-  { id:16, name:'Renaldy Alexander',   accountId:'teknisi1',             email:'teknisi1@sssolusindo.com',                company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Engineer',               status:'Active' },
-  { id:17, name:'Ridho Alif Fiansyah', accountId:'teknisi13',            email:'teknisi13@sssolusindo.com',               company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Engineer',               status:'Active' },
-  { id:18, name:'Rizky Putra Utama',   accountId:'teknisi11',            email:'teknisi11@sssolusindo.com',               company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Engineer',               status:'Active' },
-  { id:19, name:'Soleh',               accountId:'teknisi14',            email:'teknisi14@sssolusindo.com',               company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Engineer',               status:'Active' },
-  { id:20, name:'Sugianto',            accountId:'teknisi6',             email:'teknisi6@sssolusindo.com',                company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Engineer',               status:'Active' },
-  { id:21, name:'Suryo Nugroho',       accountId:'teknisi17',            email:'teknisi17@sssolusindo.com',               company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Technician',             status:'Active' },
-  { id:22, name:'Syahrial',            accountId:'BM_view',              email:'BM_view@sssolusindo.com',                 company:'BM Essence Darmawangsa Apartment', level:'Viewer',        position:'Viewer',                 status:'Active' },
-  { id:23, name:'Syarifudin',          accountId:'syarifudin',           email:'syarifudin@sssolusindo.com',              company:'BM Essence Darmawangsa Apartment', level:'Viewer',        position:'Engineering Supervisor', status:'Active' },
-  { id:24, name:'Tedi',                accountId:'tedi',                 email:'tedi@sssolusindo.com',                    company:'BM Essence Darmawangsa Apartment', level:'Viewer',        position:'Engineering Supervisor', status:'Active' },
-  { id:25, name:'Testing Account',     accountId:'soluman.tec',          email:'soluman.tec@gmail.com',                   company:'PT Sumber Sarana Solusindo',       level:'Engineer',      position:'Software Test',          status:'Active' },
-  { id:26, name:'Wulan',               accountId:'wara',                 email:'wara@sssolusindo.com',                    company:'BM Essence Darmawangsa Apartment', level:'Viewer',        position:'Viewer',                 status:'Active' },
-  { id:27, name:'Yohanes',             accountId:'supervisor1',          email:'supervisor1@sssolusindo.com',             company:'PT Sumber Sarana Solusindo',       level:'Supervisor',    position:'Supervisor',             status:'Active' },
-  { id:28, name:'Yohanes (Teknisi)',   accountId:'teknisi7',             email:'teknisi7@sssolusindo.com',               company:'PT Sumber Sarana Solusindo',       level:'Technician',    position:'Engineer',               status:'Active' },
-])
+// ── Users from API — mapped to template shape ─────────────────
+const roleToLevel: Record<string,string> = {
+  SUPER_ADMIN: 'Administrator', ADMIN: 'Administrator',
+  MANAGER: 'Supervisor', TECHNICIAN: 'Technician', VIEWER: 'Viewer',
+}
+const users = computed(() =>
+  apiUsers.value.map(u => ({
+    id:        u.id,
+    name:      `${u.firstName} ${u.lastName}`,
+    accountId: u.email.split('@')[0],
+    email:     u.email,
+    company:   'PT Sumber Sarana Solusindo',
+    level:     roleToLevel[u.role] ?? u.role,
+    position:  u.role,
+    status:    u.status === 'ACTIVE' ? 'Active' : 'Disable',
+    _raw:      u,
+  }))
+)
 // ── Filters ───────────────────────────────────────────────────
 const filters = ref({ company:'', status:'', level:'' })
 const search  = ref('')

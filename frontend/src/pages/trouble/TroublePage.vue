@@ -433,7 +433,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
 import {
   IconPlus, IconAlertTriangle, IconAlertCircle, IconCheckCircle,
   IconClock, IconCalendar, IconCheck, IconX, IconPencil, IconPrint,
@@ -441,6 +441,12 @@ import {
   IconCircleDot,
 } from "@/components/icons"
 import { ShieldAlert, Clock4, CheckCircle, Flag } from "lucide-vue-next"
+import { useTrouble } from "@/composables/useTrouble"
+
+const { items: trItems, meta: trMeta, loading: trLoading, error: trError,
+  fetch: fetchTrouble, create: createTrouble, updateStatus: updateTrStatus } = useTrouble()
+
+onMounted(() => fetchTrouble())
 
 const EQ_TYPES   = ["AC Fasilitas","Genset","Panel Listrik","CCTV","Fire Alarm","Pompa Air","Lift / Elevator"]
 const TECHNICIANS = ["Ahmad Fauzi","Budi Santoso","Citra Dewi","Dodi Prasetyo","Eko Wahyudi"]
@@ -455,14 +461,41 @@ const EQ_MAP: Record<string,{id:string,name:string}[]> = {
   "Lift / Elevator":[{id:"EDA_LIFT_001",name:"Lift Servis B1"},{id:"EDA_LIFT_002",name:"Lift Penumpang 1"}],
 }
 
-// ── Sample trouble data ───────────────────────────────────────
-const troubles = ref([
-  { id:"TBL-2026-001", equipmentId:"EDA_GEN_001", equipmentType:"Genset",       name:"Genset tidak mau start",      date:"2026-02-25", age:7,  operation:"Down",       reporter:"Ahmad Fauzi",   status:"Alert",         woId:null,        woStatus:null,     timeline:[{label:"Reported",color:"bg-red-500",date:"2026-02-25 08:12",by:"Ahmad Fauzi",note:"Genset fail to start on routine check"}] },
-  { id:"TBL-2026-002", equipmentId:"EDA_AC_002",  equipmentType:"AC Fasilitas", name:"AC Compressor Failure",       date:"2026-02-28", age:4,  operation:"Standby",    reporter:"Citra Dewi",    status:"Open-Pending",  woId:"WO-2026-010",woStatus:"Waiting", timeline:[{label:"Reported",color:"bg-red-500",date:"2026-02-28 10:00",by:"Citra Dewi",note:""},{label:"Approved by SPV",color:"bg-yellow-400",date:"2026-03-01 09:15",by:"Budi SPV",note:"Approved, schedule corrective WO"},{label:"WO Scheduled",color:"bg-blue-400",date:"2026-03-02 11:00",by:"Budi SPV",note:"WO-2026-010 created for 2026-03-05"}] },
-  { id:"TBL-2026-003", equipmentId:"EDA_PUMP_001",equipmentType:"Pompa Air",    name:"Pompa air bocor di sambungan",date:"2026-03-01", age:3,  operation:"Operations", reporter:"Dodi Prasetyo", status:"Open-WO-Done",  woId:"WO-2026-008",woStatus:"Finish",  timeline:[{label:"Reported",color:"bg-red-500",date:"2026-03-01 07:30",by:"Dodi Prasetyo",note:""},{label:"Approved",color:"bg-yellow-400",date:"2026-03-01 14:00",by:"Eko SPV",note:""},{label:"WO Completed",color:"bg-green-400",date:"2026-03-02 16:00",by:"Ahmad Fauzi",note:"Leak fixed, clamp replaced"}] },
-  { id:"TBL-2026-004", equipmentId:"EDA_LIFT_001",equipmentType:"Lift / Elevator",name:"Pintu lift tidak menutup sempurna",date:"2026-02-10",age:22,operation:"Down",reporter:"Budi Santoso", status:"Finished",      woId:"WO-2026-005",woStatus:"Finish",  timeline:[{label:"Reported",color:"bg-red-500",date:"2026-02-10 09:00",by:"Budi Santoso",note:""},{label:"Approved",color:"bg-yellow-400",date:"2026-02-11 10:00",by:"SPV",note:""},{label:"WO Done",color:"bg-green-400",date:"2026-02-14 15:00",by:"Teknisi",note:""},{label:"Finished",color:"bg-green-500",date:"2026-02-15 08:00",by:"Chief Eng",note:"Closed"}] },
-  { id:"TBL-2026-005", equipmentId:"EDA_PNL_001", equipmentType:"Panel Listrik", name:"MCB Panel sering trip",       date:"2026-03-03", age:1,  operation:"Operations", reporter:"Eko Wahyudi",   status:"Alert",         woId:null,        woStatus:null,     timeline:[{label:"Reported",color:"bg-red-500",date:"2026-03-03 13:45",by:"Eko Wahyudi",note:"MCB trips 3x in 2 hours"}] },
-])
+// ── Troubles from API — mapped to template shape ──────────────
+const troubles = computed(() =>
+  trItems.value.map(t => {
+    const apiStatus = t.status
+    // Map API TroubleStatus → display status
+    const statusMap: Record<string,string> = {
+      OPEN: "Alert", ACKNOWLEDGED: "Open-Pending", IN_PROGRESS: "Open-Pending",
+      RESOLVED: "Open-WO-Done", CLOSED: "Finished", REJECTED: "Finished",
+    }
+    const rep = (t as any).reportedBy
+    return {
+      id:            t.id,
+      code:          t.code,
+      equipmentId:   (t as any).equipment?.code ?? t.equipmentId,
+      equipmentType: (t as any).equipment?.name ?? (t as any).equipment?.code ?? "—",
+      name:          t.title,
+      date:          t.createdAt?.slice(0,10) ?? "",
+      age:           Math.floor((Date.now() - new Date(t.createdAt).getTime()) / 86400000),
+      operation:     apiStatus === "OPEN" || apiStatus === "ACKNOWLEDGED" ? "Down"
+                   : apiStatus === "IN_PROGRESS" ? "Standby" : "Operations",
+      reporter:      rep ? `${rep.firstName} ${rep.lastName}` : "—",
+      status:        statusMap[apiStatus] ?? "Alert",
+      _apiStatus:    apiStatus,
+      woId:          null,
+      woStatus:      null,
+      timeline:      (t as any).statusHistory?.map((h: any) => ({
+        label:   h.toStatus,
+        color:   "bg-blue-400",
+        date:    new Date(h.createdAt).toLocaleString("id-ID"),
+        by:      "System",
+        note:    h.reason ?? "",
+      })) ?? [],
+    }
+  })
+)
 
 // ── Status filter ─────────────────────────────────────────────
 const activeStatusFilter = ref("")

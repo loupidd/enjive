@@ -384,13 +384,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { ref, computed, onMounted, watch } from "vue"
 import { useRouter } from "vue-router"
 const router = useRouter()
 import {
   IconFilter, IconChevronDown, IconPencil, IconPrint,
   IconCheck, IconX, IconAlertTriangle, IconRefresh, IconExternalLink
 } from "@/components/icons"
+import { useWorkOrders } from "@/composables/useWorkOrders"
+
+const { items: woItems, meta: woMeta, loading: woLoading, error: woError, fetch: fetchWOs, updateStatus } = useWorkOrders()
+
+onMounted(() => fetchWOs())
 
 // ── Constants ─────────────────────────────────────────────────
 const PIPELINE = [
@@ -415,18 +420,37 @@ const TECHNICIANS = ["Ahmad Fauzi","Budi Santoso","Citra Dewi","Dodi Prasetyo","
 // In real app: get from auth store
 const currentRole = ref("TECHNICIAN") // TECHNICIAN | LEAD_TECH | CLIENT_SPV | CHIEF_ENG | ADMIN
 
-// ── Sample task data ──────────────────────────────────────────
-const tasks = ref([
-  { id:"WO-2026-0001", equipmentId:"EDA_AC_001",    equipmentType:"AC Fasilitas",  troubleId:null,         type:"Preventive",   interval:"Monthly",   startDate:"2026-03-01", duration:"2h 15m", technician:"Ahmad Fauzi",  note:"Routine PM",            status:"Waiting",          noteWO:"" },
-  { id:"WO-2026-0002", equipmentId:"EDA_GEN_001",   equipmentType:"Genset",        troubleId:null,         type:"Preventive",   interval:"3 Monthly", startDate:"2026-03-01", duration:"4h 30m", technician:"Budi Santoso", note:"Quarterly inspection",  status:"Process",          noteWO:"" },
-  { id:"WO-2026-0003", equipmentId:"EDA_PUMP_003",  equipmentType:"Pompa Air",     troubleId:"TBL-2026-01",type:"Corrective",   interval:"Once",      startDate:"2026-02-28", duration:"3h 00m", technician:"Citra Dewi",   note:"Fix water pump leak",   status:"Reporting",        noteWO:"Corrective WO" },
-  { id:"WO-2026-0004", equipmentId:"EDA_PNL_001",   equipmentType:"Panel Listrik", troubleId:null,         type:"Thermography Investigation", interval:"6 Monthly", startDate:"2026-02-25", duration:"1h 45m", technician:"Ahmad Fauzi",  note:"Thermo panel check",    status:"Review",           noteWO:"" },
-  { id:"WO-2026-0005", equipmentId:"EDA_AC_002",    equipmentType:"AC Fasilitas",  troubleId:null,         type:"Preventive",   interval:"Monthly",   startDate:"2026-02-20", duration:"2h 00m", technician:"Dodi Prasetyo",note:"",                      status:"Client Spv Review",noteWO:"" },
-  { id:"WO-2026-0006", equipmentId:"EDA_CCTV_001",  equipmentType:"CCTV",          troubleId:null,         type:"Preventive",   interval:"Monthly",   startDate:"2026-02-15", duration:"1h 20m", technician:"Eko Wahyudi",  note:"",                      status:"Chief Eng Review", noteWO:"" },
-  { id:"WO-2026-0007", equipmentId:"EDA_LIFT_001",  equipmentType:"Lift / Elevator",troubleId:null,        type:"Preventive",   interval:"Monthly",   startDate:"2026-02-10", duration:"3h 10m", technician:"Budi Santoso", note:"",                      status:"Finish",           noteWO:"" },
-  { id:"WO-2026-0008", equipmentId:"EDA_FA_001",    equipmentType:"Fire Alarm",    troubleId:null,         type:"Predictive",   interval:"6 Monthly", startDate:"2026-02-05", duration:"",       technician:"Ahmad Fauzi",  note:"",                      status:"Reject",           noteWO:"" },
-  { id:"WO-2026-0009", equipmentId:"EDA_AC_001",    equipmentType:"AC Fasilitas",  troubleId:null,         type:"Preventive",   interval:"Monthly",   startDate:"2026-03-03", duration:"",       technician:"Citra Dewi",   note:"",                      status:"Waiting",          noteWO:"" },
-])
+// ── Tasks from API — mapped to the shape the template expects ──
+const tasks = computed(() =>
+  woItems.value.map(wo => ({
+    id:            wo.id,
+    code:          wo.code,
+    equipmentId:   (wo as any).equipment?.code ?? wo.equipmentId,
+    equipmentType: (wo as any).equipment?.name ?? (wo as any).equipment?.code ?? wo.equipmentId,
+    troubleId:     (wo as any).troubleReportId ?? null,
+    type:          wo.type === "PREVENTIVE" ? "Preventive"
+                 : wo.type === "CORRECTIVE" ? "Corrective"
+                 : wo.type === "INSPECTION" ? "Predictive" : wo.type,
+    interval:      "Monthly",
+    startDate:     wo.createdAt?.slice(0,10) ?? "",
+    duration:      wo.actualHours ? wo.actualHours + "h" : "",
+    technician:    (wo as any).assignedTo
+                   ? `${(wo as any).assignedTo.firstName} ${(wo as any).assignedTo.lastName}`
+                   : "Unassigned",
+    note:          wo.description ?? "",
+    status:        wo.status === "DRAFT"        ? "Waiting"
+                 : wo.status === "OPEN"         ? "Waiting"
+                 : wo.status === "ASSIGNED"     ? "Process"
+                 : wo.status === "IN_PROGRESS"  ? "Process"
+                 : wo.status === "ON_HOLD"      ? "Review"
+                 : wo.status === "COMPLETED"    ? "Finish"
+                 : wo.status === "CANCELLED"    ? "Reject"
+                 : wo.status === "CLOSED"       ? "Finish"
+                 : "Waiting",
+    _apiStatus:    wo.status,
+    noteWO:        "",
+  }))
+)
 
 // ── Filters ───────────────────────────────────────────────────
 const filters = ref({ startDate:"", endDate:"", equipmentType:"", status:"", interval:"", maintType:"", technician:"", thermographic:"" })
@@ -558,26 +582,28 @@ const ackModalTitle = computed(() => {
 
 function openAck(task: any) { ackTask.value=task; ackNote.value=""; showAckModal.value=true }
 
-function approveTask() {
+async function approveTask() {
   if(!ackTask.value) return
-  const nextStatus: Record<string,string> = {
-    "Waiting":          "Process",
-    "Process":          "Reporting",
-    "Reporting":        "Review",
-    "Review":           "Client Spv Review",
-    "Client Spv Review":"Chief Eng Review",
-    "Chief Eng Review": "Finish",
+  const nextApiStatus: Record<string,string> = {
+    "Waiting": "IN_PROGRESS", "Process": "IN_PROGRESS",
+    "Reporting": "COMPLETED", "Review": "COMPLETED",
+    "Client Spv Review": "CLOSED", "Chief Eng Review": "CLOSED",
   }
-  const idx = tasks.value.findIndex(t=>t.id===ackTask.value.id)
-  if(idx>=0) tasks.value[idx].status = nextStatus[ackTask.value.status] ?? ackTask.value.status
-  showAckModal.value=false
+  const next = nextApiStatus[ackTask.value.status]
+  if(next) {
+    try { await updateStatus(ackTask.value.id, next, ackNote.value || undefined) }
+    catch { /* error shown via woError */ }
+    await fetchWOs()
+  }
+  showAckModal.value = false
 }
 
-function rejectTask() {
+async function rejectTask() {
   if(!ackTask.value) return
-  const idx = tasks.value.findIndex(t=>t.id===ackTask.value.id)
-  if(idx>=0) tasks.value[idx].status = "Reject"
-  showAckModal.value=false
+  try { await updateStatus(ackTask.value.id, "CANCELLED", ackNote.value || undefined) }
+  catch { /* error shown via woError */ }
+  await fetchWOs()
+  showAckModal.value = false
 }
 
 // ── Edit Modal ────────────────────────────────────────────────

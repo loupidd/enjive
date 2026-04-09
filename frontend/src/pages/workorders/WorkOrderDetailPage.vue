@@ -516,7 +516,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, watch } from "vue"
 import { useRouter, useRoute, RouterLink } from "vue-router"
 import {
   IconArrowLeft, IconPencil, IconPrint, IconCheck, IconCheckCircle,
@@ -525,10 +525,18 @@ import {
   IconPlus, IconX, IconChevronRight
 } from "@/components/icons"
 import PrintReport from "@/components/print/PrintReport.vue"
+import { useWorkOrders } from "@/composables/useWorkOrders"
+import { compressImage, compressImages } from "@/utils/imageCompress"
 
 const router = useRouter()
 const route  = useRoute()
 const woId   = route.params.id as string
+
+const { item: woData, loading: woFetching, error: woFetchError, fetchOne } = useWorkOrders()
+
+onMounted(async () => {
+  if (woId) await fetchOne(woId)
+})
 
 // ── O(1) Maps ─────────────────────────────────────────────────
 const STATUS_COLORS = new Map([
@@ -623,6 +631,7 @@ const WO_MOCK_DATA: Record<string, any> = {
   "WO-2026-0007": { equipmentId:"EDA_LIFT_001",equipmentName:"Lift Servis B1", equipmentType:"Lift",          section:"Lift",             location:"Basement 1",type:"Preventive",                interval:"Monthly",  technician:"Budi Santoso", status:"Finish",            troubleId:null },
   "WO-2026-0008": { equipmentId:"EDA_FA_001",  equipmentName:"FA Panel Utama", equipmentType:"Fire Alarm",    section:"Fire Alarm",       location:"Basement 1",type:"Predictive",                interval:"6 Monthly",technician:"Ahmad Fauzi",  status:"Reject",            troubleId:null },
 }
+// Real data from API overrides mock — falls back to mock if not loaded yet
 const mockBase = WO_MOCK_DATA[woId] ?? WO_MOCK_DATA["WO-2026-0001"]
 
 const wo = ref({
@@ -653,6 +662,44 @@ const wo = ref({
   ],
   signatures: [] as any[],
 })
+
+// Merge real API data when it loads
+watch(woData, (api) => {
+  if (!api) return
+  const assignee = (api as any).assignedTo
+  const eq       = (api as any).equipment
+  wo.value.id            = api.id
+  wo.value.equipmentId   = eq?.code ?? api.equipmentId
+  wo.value.equipmentName = eq?.name ?? wo.value.equipmentName
+  wo.value.equipmentType = eq?.category ?? wo.value.equipmentType
+  wo.value.location      = eq?.location ?? wo.value.location
+  wo.value.type          = api.type === "PREVENTIVE" ? "Preventive"
+                         : api.type === "CORRECTIVE" ? "Corrective"
+                         : api.type === "INSPECTION" ? "Predictive" : api.type
+  wo.value.noteWO        = api.notes ?? wo.value.noteWO
+  wo.value.status        = api.status === "DRAFT"        ? "Waiting"
+                         : api.status === "OPEN"         ? "Waiting"
+                         : api.status === "ASSIGNED"     ? "Process"
+                         : api.status === "IN_PROGRESS"  ? "Process"
+                         : api.status === "ON_HOLD"      ? "Review"
+                         : api.status === "COMPLETED"    ? "Finish"
+                         : api.status === "CANCELLED"    ? "Reject"
+                         : api.status === "CLOSED"       ? "Finish"
+                         : wo.value.status
+  if (assignee) {
+    wo.value.technician = `${assignee.firstName} ${assignee.lastName}`
+    wo.value.workers    = [{ name:`${assignee.firstName} ${assignee.lastName}`, position: assignee.role }]
+  }
+  // Build timeline from status history
+  const history = (api as any).statusHistory ?? []
+  if (history.length) {
+    wo.value.timeline = history.map((h:any) => ({
+      label: h.toStatus, color:"bg-blue-400",
+      date:  new Date(h.createdAt).toLocaleString("id-ID"),
+      by:    "System", note: h.reason ?? "",
+    }))
+  }
+}, { immediate: true })
 
 // ── Form state ─────────────────────────────────────────────────
 const showACK     = ref(false)

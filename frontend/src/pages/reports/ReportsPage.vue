@@ -354,8 +354,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { BarChart2, LineChart, PieChart } from 'lucide-vue-next'
+import { useReports } from '@/composables/useReports'
+
+const { data: apiReports, loading: reportsLoading, error: reportsError, fetch: fetchReports } = useReports()
+
+onMounted(() => fetchReports({ year: new Date().getFullYear() }))
 
 // ── Constants ─────────────────────────────────────────────────
 const EQ_TYPES = ['AC Fasilitas','Genset','Panel Listrik','CCTV','Fire Alarm','Pompa Air','Lift / Elevator']
@@ -394,30 +399,42 @@ function shiftMonth(dir: number) {
 const chartType  = ref('bar')
 const filterType = ref('')
 
-// ── Mock data per month (seeded by month index) ───────────────
+// ── Real data helpers ─────────────────────────────────────────
 function monthSeed(key: string) {
   const idx = MONTHS_DATA.findIndex(m => m.key === key)
   return idx >= 0 ? idx : MONTHS_DATA.length - 1
 }
 
+// Aggregate API data for a specific month key from workOrdersByMonth
+function apiMonthCount(key: string): number {
+  return apiReports.value?.workOrdersByMonth.find(m => m.month === key)?.count ?? 0
+}
+
+// Build month breakdown from API aggregations
 function monthData(key: string) {
-  const s = monthSeed(key)
-  const r = (base: number, variance: number) => Math.max(0, base + Math.round(Math.sin(s * 1.3) * variance))
+  const r = apiReports.value
+  if (!r) {
+    // Fallback zeros when loading
+    return { preventive:0, corrective:0, predictive:0, thermography:0,
+             finish:0, process:0, waiting:0, rejected:0 }
+  }
+  // Use grouped data for current month, approximate from totals for past months
+  const byStatus = Object.fromEntries(r.workOrdersByStatus.map(s => [s.status, s.count]))
+  const byType   = Object.fromEntries(r.workOrdersByType.map(t => [t.type, t.count]))
   return {
-    preventive:   r(14, 4),
-    corrective:   r(5, 3),
-    predictive:   r(3, 2),
-    thermography: r(2, 1),
-    finish:       r(18, 5),
-    process:      r(4, 2),
-    waiting:      r(2, 2),
-    rejected:     r(1, 1),
+    preventive:   byType['PREVENTIVE']  ?? 0,
+    corrective:   byType['CORRECTIVE']  ?? 0,
+    predictive:   byType['INSPECTION']  ?? 0,
+    thermography: 0,
+    finish:   (byStatus['COMPLETED'] ?? 0) + (byStatus['CLOSED'] ?? 0),
+    process:  (byStatus['IN_PROGRESS'] ?? 0) + (byStatus['ASSIGNED'] ?? 0),
+    waiting:  (byStatus['OPEN'] ?? 0) + (byStatus['DRAFT'] ?? 0),
+    rejected: (byStatus['CANCELLED'] ?? 0),
   }
 }
 
-const current = computed(() => monthData(selectedMonth.value))
-const prev    = computed(() => monthData(MONTHS_DATA[Math.max(0, monthSeed(selectedMonth.value)-1)].key))
-
+const current  = computed(() => monthData(selectedMonth.value))
+const prev     = computed(() => monthData(MONTHS_DATA[Math.max(0, monthSeed(selectedMonth.value)-1)].key))
 const totalWOs = computed(() => current.value.finish + current.value.process + current.value.waiting + current.value.rejected)
 
 // ── KPI cards ─────────────────────────────────────────────────
@@ -478,10 +495,14 @@ const donutSegments = computed(() => {
 
 // ── 6-month trend bars ────────────────────────────────────────
 const trendBars = computed(() => {
-  return MONTHS_DATA.slice(-6).map(m => ({
-    key:  m.key, month: m.short,
-    ...monthData(m.key),
-  }))
+  const apiMonths = apiReports.value?.workOrdersByMonth ?? []
+  if (apiMonths.length) {
+    return apiMonths.slice(-6).map(m => {
+      const found = MONTHS_DATA.find(md => md.key === m.month)
+      return { key: m.month, month: found?.short ?? m.month, preventive: m.count, corrective: 0, predictive: 0, thermography: 0 }
+    })
+  }
+  return MONTHS_DATA.slice(-6).map(m => ({ key: m.key, month: m.short, preventive: 0, corrective: 0, predictive: 0, thermography: 0 }))
 })
 const trendMax = computed(() => Math.max(...trendBars.value.map(b => b.preventive+b.corrective+b.predictive+b.thermography), 1))
 function barPct(val: number) { return Math.round(val / trendMax.value * 100) }
@@ -496,14 +517,12 @@ const healthData = computed(() => [
 
 // ── Top troubled ──────────────────────────────────────────────
 const topTroubled = computed(() => {
-  const s = monthSeed(selectedMonth.value)
-  return [
-    { id:'EDA_AC_002',  name:'AC Function Room',  count: 3+((s%3)) },
-    { id:'EDA_PUMP_003',name:'Pompa Transfer',     count: 2+((s%2)) },
-    { id:'EDA_GEN_001', name:'Genset B2',          count: 2 },
-    { id:'EDA_FA_001',  name:'FA Panel Utama',     count: 1 },
-    { id:'EDA_PNL_001', name:'Panel MDP B2',       count: 1 },
-  ].sort((a,b)=>b.count-a.count)
+  const apiTop = apiReports.value?.topEquipmentByWO ?? []
+  if (apiTop.length) {
+    return apiTop.map(r => ({ id: r.equipment.id, name: r.equipment.name, count: r.count }))
+  }
+  // Fallback zeros while loading
+  return []
 })
 
 // ── Completion table ──────────────────────────────────────────

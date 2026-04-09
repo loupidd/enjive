@@ -16,7 +16,10 @@
     </div>
 
     <!-- ── KPI row ──────────────────────────────────────────── -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div v-if="dashLoading" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div v-for="i in 4" :key="i" class="card py-4 px-5 h-20 animate-pulse bg-white/5"/>
+    </div>
+    <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <div v-for="(kpi, i) in kpiCards" :key="kpi.label"
         class="card py-4 px-5 flex items-center gap-4 overflow-hidden relative"
         :style="{ animationDelay: i * 0.06 + 's' }"
@@ -238,10 +241,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import GlobalSearch from '@/components/common/GlobalSearch.vue'
 import { RouterLink } from 'vue-router'
 import { ClipboardList, AlertTriangle, CheckCircle2, Clock } from 'lucide-vue-next'
+import { useDashboard } from '@/composables/useDashboard'
+
+const { data: dashData, loading: dashLoading, fetch: fetchDashboard } = useDashboard()
+onMounted(() => fetchDashboard())
 
 // ── Donut chart component ─────────────────────────────────────
 const DonutChart = {
@@ -304,13 +311,16 @@ const HBarChart = {
     </div>`
 }
 
-// ── KPI cards ─────────────────────────────────────────────────
-const kpiCards = [
-  { label:"Total WO This Year",  value:"1,556", icon:ClipboardList, iconBg:"bg-blue-500/15",   iconColor:"text-blue-400"   },
-  { label:"Active Troubles",      value:"3",     icon:AlertTriangle,  iconBg:"bg-red-500/15",    iconColor:"text-red-400",   },
-  { label:"Completed This Month", value:"28",    icon:CheckCircle2,   iconBg:"bg-green-500/15",  iconColor:"text-green-400"  },
-  { label:"Avg. Availability",    value:"100%",  icon:Clock,          iconBg:"bg-caramel/15",    iconColor:"text-caramel"    },
-]
+// ── KPI cards — live from API ─────────────────────────────────
+const kpiCards = computed(() => {
+  const k = dashData.value?.kpi
+  return [
+    { label:"Open Work Orders",    value: k ? String(k.openWorkOrders)    : "—", icon:ClipboardList, iconBg:"bg-blue-500/15",  iconColor:"text-blue-400"  },
+    { label:"Active Troubles",     value: k ? String(k.openTrouble)       : "—", icon:AlertTriangle,  iconBg:"bg-red-500/15",   iconColor:"text-red-400"   },
+    { label:"Completed This Month",value: k ? String(k.completedThisMonth): "—", icon:CheckCircle2,   iconBg:"bg-green-500/15", iconColor:"text-green-400" },
+    { label:"Equipment Available", value: k ? k.equipmentAvailability+"%" : "—", icon:Clock,          iconBg:"bg-caramel/15",   iconColor:"text-caramel"   },
+  ]
+})
 
 // ── Chart data ────────────────────────────────────────────────
 const COLORS = { preventive:'#3b82f6', certification:'#a855f7', corrective:'#22c55e', predictive:'#f97316' }
@@ -338,18 +348,22 @@ const activeDonutData = computed(() => {
 const activeDonutTotal = computed(() => activeDonutData.value.reduce((a,d)=>a+d.value,0))
 
 // ── Bottom panels ─────────────────────────────────────────────
-const activeTroubles = [
-  { id:1, name:'AC Compressor Failure',  equipment:'EDA_AC_FUNC_ROOM_1', severity:'HIGH',     status:'ALERT', days:3 },
-  { id:2, name:'Genset tidak mau start', equipment:'EDA_GEN_B2_001',     severity:'CRITICAL', status:'OPEN',  days:7 },
-  { id:3, name:'Pompa air bocor',        equipment:'EDA_PUMP_P1_003',    severity:'MEDIUM',   status:'OPEN',  days:1 },
-]
-const topTroubled = [
-  { name:'AC Function Room',    count:8 },
-  { name:'Genset B2',           count:5 },
-  { name:'Panel Listrik Lt.3',  count:4 },
-  { name:'CCTV Lobby Utama',    count:3 },
-  { name:'Pompa Air Bersih',    count:2 },
-]
+const activeTroubles = computed(() =>
+  (dashData.value?.recentTrouble ?? []).map(t => ({
+    id: t.id,
+    name: t.title,
+    equipment: (t as any).equipment?.name ?? '—',
+    severity: t.severity,
+    status: t.status,
+    days: Math.floor((Date.now() - new Date(t.createdAt).getTime()) / 86400000),
+  }))
+)
+const topTroubled = computed(() =>
+  (dashData.value?.recentTrouble ?? []).map(t => ({
+    name: (t as any).equipment?.name ?? t.title,
+    count: 1,
+  }))
+)
 
 const sevCol = (s:string) => ({ CRITICAL:'bg-red-500', HIGH:'bg-orange-400', MEDIUM:'bg-yellow-400', LOW:'bg-green-400' }[s] ?? 'bg-slate-400')
 const sPill  = (s:string) => s==='ALERT'?'bg-red-500/20 text-red-400':s==='OPEN'?'bg-yellow-400/20 text-yellow-300':'bg-green-500/20 text-green-400'

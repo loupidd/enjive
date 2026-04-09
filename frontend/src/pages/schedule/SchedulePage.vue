@@ -275,7 +275,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useSchedule } from '@/composables/useSchedule'
+
+const { items: schedItems, loading: schedLoading, error: schedError,
+  fetch: fetchSchedules } = useSchedule()
+
+onMounted(() => fetchSchedules())
 
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 const LEGEND = [
@@ -332,14 +338,33 @@ function fmtDate(y:number, m:number, d:number) {
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`
 }
 
-// ── Events data ───────────────────────────────────────────────
-const events = ref([
-  { id:1, equipmentId:'EDA_AC_001',   equipmentType:'AC Fasilitas', classification:'Preventive',               interval:'Monthly',   date:fmtDate(today.getFullYear(),today.getMonth(),5),                   technician:'Ahmad Fauzi',  description:'', repeat:false, woStatus:'Process'  },
-  { id:2, equipmentId:'EDA_GEN_001',  equipmentType:'Genset',       classification:'Predictive',               interval:'3 Monthly', date:fmtDate(today.getFullYear(),today.getMonth(),12),                  technician:'Budi Santoso', description:'', repeat:false, woStatus:'Finish'   },
-  { id:3, equipmentId:'EDA_PUMP_003', equipmentType:'Pompa',        classification:'Thermography Investigation',interval:'6 Monthly', date:fmtDate(today.getFullYear(),today.getMonth(),today.getDate()),    technician:'Citra Dewi',   description:'', repeat:false, woStatus:null       },
-  { id:4, equipmentId:'EDA_PNL_001',  equipmentType:'Panel Listrik',classification:'Preventive',               interval:'Monthly',   date:fmtDate(today.getFullYear(),today.getMonth(),today.getDate()+3),  technician:'Ahmad Fauzi',  description:'', repeat:false, woStatus:null       },
-  { id:5, equipmentId:'EDA_CCTV_001', equipmentType:'CCTV',         classification:'Corrective',               interval:'Once',      date:fmtDate(today.getFullYear(),today.getMonth(),today.getDate()+3),  technician:'Dodi Prasetyo',description:'', repeat:false, woStatus:'Waiting'  },
-])
+// ── Events from API — mapped to calendar shape ────────────────
+const freqLabel: Record<string,string> = {
+  ONCE: "Once", DAILY: "Daily", WEEKLY: "Weekly",
+  BIWEEKLY: "Bi-Weekly", MONTHLY: "Monthly",
+  QUARTERLY: "3 Monthly", ANNUALLY: "6 Monthly",
+}
+const actTypeToClass: Record<string,string> = {
+  MAINTENANCE: "Preventive", INSPECTION: "Predictive",
+  CALIBRATION: "Predictive", CLEANING: "Preventive",
+  REPAIR: "Corrective", REPLACEMENT: "Corrective",
+  LUBRICATION: "Preventive", TESTING: "Predictive",
+}
+const events = computed(() =>
+  schedItems.value.map(s => ({
+    id:            s.id,
+    equipmentId:   s.equipmentId,
+    equipmentType: (s as any).equipment?.name ?? "—",
+    classification:actTypeToClass[(s as any).activityType ?? ""] ?? "Preventive",
+    interval:      freqLabel[s.frequency] ?? s.frequency,
+    date:          s.nextRunAt?.slice(0,10) ?? s.startDate?.slice(0,10) ?? "",
+    technician:    "Unassigned",
+    description:   s.description ?? "",
+    repeat:        s.frequency !== "ONCE",
+    woStatus:      null,
+    isActive:      s.isActive,
+  }))
+)
 
 // ── Calendar cells ────────────────────────────────────────────
 const calendarCells = computed(() => {

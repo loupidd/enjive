@@ -210,7 +210,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
+import { useActivities } from "@/composables/useActivities"
+
+const { items: actLogs, loading: actLoading, error: actError, fetch: fetchActivities } = useActivities()
+onMounted(() => fetchActivities({ limit: 50 }))
 
 const ACTIVITY_TYPES = ["Addition","Adjustment","Cleaning","Function Test","Measurement","Others","Replacement","Thermographic Investigation","Visual"]
 
@@ -231,7 +235,8 @@ function resetFilter() {
 
 const equipmentTypes = ["AC Fasilitas","Genset","Panel Listrik","CCTV","Fire Alarm","Pompa Air","Lift / Elevator"]
 
-// ── Activities data (keyed by type+classification+interval) ──
+// ── Activity templates (local — these define PM checklists per equipment type)
+// In future this can be persisted to /activities API with a "template" flag
 const allActivities = ref([
   {id:1, equipmentType:"AC Fasilitas", classification:"Preventive", interval:"Monthly",   name:"Cleaning Filter",   type:"Cleaning",   status:"Enable", answerType:"Qualitative",  optimum:"",  min:"",  max:"",  unit:"Bersih",  sort:1},
   {id:2, equipmentType:"AC Fasilitas", classification:"Preventive", interval:"Monthly",   name:"Cek Kondensasi",    type:"Visual",     status:"Enable", answerType:"Qualitative",  optimum:"",  min:"",  max:"",  unit:"Normal",  sort:2},
