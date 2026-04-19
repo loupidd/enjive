@@ -9,19 +9,28 @@ export class AuthService {
     });
 
     if (!user || user.status !== "ACTIVE") {
-      const err = new Error("Invalid credentials") as Error & { statusCode: number };
+      const err = new Error("Invalid credentials") as Error & {
+        statusCode: number;
+      };
       err.statusCode = 401;
       throw err;
     }
 
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!valid) {
-      const err = new Error("Invalid credentials") as Error & { statusCode: number };
+      const err = new Error("Invalid credentials") as Error & {
+        statusCode: number;
+      };
       err.statusCode = 401;
       throw err;
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role, site: (user as any).site ?? "EDA" };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      site: (user as any).site ?? "EDA",
+    };
     const token = fastify.jwt.sign(payload);
 
     await prisma.user.update({
@@ -34,9 +43,13 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const existing = await prisma.user.findUnique({ where: { email: dto.email } });
+    const existing = await prisma.user.findUnique({
+      where: { email: dto.email },
+    });
     if (existing) {
-      const err = new Error("Email already in use") as Error & { statusCode: number };
+      const err = new Error("Email already in use") as Error & {
+        statusCode: number;
+      };
       err.statusCode = 409;
       throw err;
     }
