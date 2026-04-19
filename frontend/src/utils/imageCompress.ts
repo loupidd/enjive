@@ -7,27 +7,28 @@
 export function compressImage(
   file: File,
   maxPx = 1200,
-  quality = 0.82
+  quality = 0.82,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onload = (ev) => {
-      const img = new Image()
+      const img = new Image();
       img.onload = () => {
-        const ratio = Math.min(maxPx / img.width, maxPx / img.height, 1)
-        const w = Math.round(img.width  * ratio)
-        const h = Math.round(img.height * ratio)
-        const canvas = document.createElement('canvas')
-        canvas.width = w; canvas.height = h
-        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
-        resolve(canvas.toDataURL('image/jpeg', quality))
-      }
-      img.onerror = reject
-      img.src = ev.target?.result as string
-    }
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
+        const ratio = Math.min(maxPx / img.width, maxPx / img.height, 1);
+        const w = Math.round(img.width * ratio);
+        const h = Math.round(img.height * ratio);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = ev.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 /**
@@ -36,7 +37,7 @@ export function compressImage(
 export async function compressImages(
   files: File[],
   maxPx = 1200,
-  quality = 0.82
+  quality = 0.82,
 ): Promise<string[]> {
-  return Promise.all(files.map(f => compressImage(f, maxPx, quality)))
+  return Promise.all(files.map((f) => compressImage(f, maxPx, quality)));
 }
