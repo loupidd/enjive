@@ -22,7 +22,7 @@ async function main() {
       update: { passwordHash: u.hash, site: u.site, status: u.status as any },
       create: {
         email: u.email,
-        passwordHash: u.passwordHash,
+        passwordHash: u.hash,
         firstName: u.firstName,
         lastName: u.lastName,
         role: u.role as any,
