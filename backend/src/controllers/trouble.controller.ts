@@ -1,8 +1,11 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { troubleService } from "../services/trouble.service.js";
 import {
-  troubleQuerySchema, troubleIdSchema,
-  createTroubleSchema, updateTroubleSchema, updateTroubleStatusSchema,
+  troubleQuerySchema,
+  troubleIdSchema,
+  createTroubleSchema,
+  updateTroubleSchema,
+  updateTroubleStatusSchema,
 } from "../schemas/trouble.schema.js";
 import { successResponse } from "../types/api.js";
 
@@ -21,13 +24,20 @@ export const troubleController = {
   async create(req: FastifyRequest, reply: FastifyReply) {
     const data = createTroubleSchema.parse(req.body);
     const tr = await troubleService.create(data, (req as any).user.sub);
-    return reply.status(201).send(successResponse(tr, "Trouble report created"));
+    return reply
+      .status(201)
+      .send(successResponse(tr, "Trouble report created"));
   },
 
   async update(req: FastifyRequest, reply: FastifyReply) {
     const { id } = troubleIdSchema.parse(req.params);
     const data = updateTroubleSchema.parse(req.body);
-    return reply.send(successResponse(await troubleService.update(id, data), "Trouble report updated"));
+    return reply.send(
+      successResponse(
+        await troubleService.update(id, data),
+        "Trouble report updated",
+      ),
+    );
   },
 
   async updateStatus(req: FastifyRequest, reply: FastifyReply) {

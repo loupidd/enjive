@@ -22,7 +22,9 @@ export const createEquipmentSchema = z.object({
   specifications: z.record(z.unknown()).optional(),
 });
 
-export const updateEquipmentSchema = createEquipmentSchema.partial().omit({ code: true });
+export const updateEquipmentSchema = createEquipmentSchema
+  .partial()
+  .omit({ code: true });
 
 export const equipmentQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
@@ -30,7 +32,9 @@ export const equipmentQuerySchema = z.object({
   search: z.string().optional(),
   status: EquipmentStatusEnum.optional(),
   category: z.string().optional(),
-  sortBy: z.enum(["name", "code", "createdAt", "updatedAt"]).default("createdAt"),
+  sortBy: z
+    .enum(["name", "code", "createdAt", "updatedAt"])
+    .default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   userSite: z.string().optional(),
 });

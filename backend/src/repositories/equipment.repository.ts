@@ -1,13 +1,33 @@
 import { prisma } from "../config/prisma.js";
-import type { CreateEquipmentDto, UpdateEquipmentDto, EquipmentQuery } from "../schemas/equipment.schema.js";
+import type {
+  CreateEquipmentDto,
+  UpdateEquipmentDto,
+  EquipmentQuery,
+} from "../schemas/equipment.schema.js";
 
 export class EquipmentRepository {
-  async findAll(query: EquipmentQuery) {
-    const { page, limit, search, status, category, sortBy, sortOrder } = query;
+  async findAll(query: EquipmentQuery & { userSite?: string }) {
+    const {
+      page,
+      limit,
+      search,
+      status,
+      category,
+      sortBy,
+      sortOrder,
+      userSite,
+    } = query;
     const skip = (page - 1) * limit;
+
+    // Site filtering: BOTH users see all, others see their site only
+    const siteFilter =
+      userSite && userSite !== "BOTH"
+        ? { OR: [{ site: userSite }, { site: "BOTH" }, { site: null }] }
+        : {};
 
     const where = {
       deletedAt: null,
+      ...siteFilter,
       ...(status && { status }),
       ...(category && { category }),
       ...(search && {

@@ -1,9 +1,12 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { workOrderService } from "../services/workorder.service.js";
 import {
-  workOrderQuerySchema, workOrderIdSchema,
-  createWorkOrderSchema, updateWorkOrderSchema,
-  updateWorkOrderStatusSchema, createWorkReportSchema,
+  workOrderQuerySchema,
+  workOrderIdSchema,
+  createWorkOrderSchema,
+  updateWorkOrderSchema,
+  updateWorkOrderStatusSchema,
+  createWorkReportSchema,
 } from "../schemas/workorder.schema.js";
 import { successResponse } from "../types/api.js";
 
@@ -28,7 +31,12 @@ export const workOrderController = {
   async update(req: FastifyRequest, reply: FastifyReply) {
     const { id } = workOrderIdSchema.parse(req.params);
     const data = updateWorkOrderSchema.parse(req.body);
-    return reply.send(successResponse(await workOrderService.update(id, data), "Work order updated"));
+    return reply.send(
+      successResponse(
+        await workOrderService.update(id, data),
+        "Work order updated",
+      ),
+    );
   },
 
   async updateStatus(req: FastifyRequest, reply: FastifyReply) {
@@ -41,8 +49,14 @@ export const workOrderController = {
   async addWorkReport(req: FastifyRequest, reply: FastifyReply) {
     const { id } = workOrderIdSchema.parse(req.params);
     const data = createWorkReportSchema.parse(req.body);
-    const report = await workOrderService.addWorkReport(id, (req as any).user.sub, data);
-    return reply.status(201).send(successResponse(report, "Work report submitted"));
+    const report = await workOrderService.addWorkReport(
+      id,
+      (req as any).user.sub,
+      data,
+    );
+    return reply
+      .status(201)
+      .send(successResponse(report, "Work report submitted"));
   },
 
   async delete(req: FastifyRequest, reply: FastifyReply) {
