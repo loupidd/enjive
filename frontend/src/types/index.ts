@@ -1,20 +1,52 @@
 // ─── Enums (mirroring backend) ─────────────────────────────────
 
-export type Role = "SUPER_ADMIN" | "ADMIN" | "MANAGER" | "TECHNICIAN" | "VIEWER";
+export type Role =
+  | "SUPER_ADMIN"
+  | "ADMIN"
+  | "MANAGER"
+  | "TECHNICIAN"
+  | "VIEWER";
 
-export type EquipmentStatus = "OPERATIONAL" | "UNDER_MAINTENANCE" | "OUT_OF_SERVICE" | "DECOMMISSIONED";
+export type EquipmentStatus =
+  | "OPERATIONAL"
+  | "UNDER_MAINTENANCE"
+  | "OUT_OF_SERVICE"
+  | "DECOMMISSIONED";
 
 export type WorkOrderStatus =
-  | "DRAFT" | "OPEN" | "ASSIGNED" | "IN_PROGRESS"
-  | "ON_HOLD" | "COMPLETED" | "CANCELLED" | "CLOSED";
+  | "DRAFT"
+  | "OPEN"
+  | "ASSIGNED"
+  | "IN_PROGRESS"
+  | "ON_HOLD"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "CLOSED";
 
 export type WorkOrderPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-export type WorkOrderType = "PREVENTIVE" | "CORRECTIVE" | "INSPECTION" | "EMERGENCY";
+export type WorkOrderType =
+  | "PREVENTIVE"
+  | "CORRECTIVE"
+  | "INSPECTION"
+  | "EMERGENCY";
 
-export type TroubleStatus = "OPEN" | "ACKNOWLEDGED" | "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "REJECTED";
+export type TroubleStatus =
+  | "OPEN"
+  | "ACKNOWLEDGED"
+  | "IN_PROGRESS"
+  | "RESOLVED"
+  | "CLOSED"
+  | "REJECTED";
 export type TroubleSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
-export type ScheduleFrequency = "ONCE" | "DAILY" | "WEEKLY" | "BIWEEKLY" | "MONTHLY" | "QUARTERLY" | "ANNUALLY";
+export type ScheduleFrequency =
+  | "ONCE"
+  | "DAILY"
+  | "WEEKLY"
+  | "BIWEEKLY"
+  | "MONTHLY"
+  | "QUARTERLY"
+  | "ANNUALLY";
 
 // ─── Models ───────────────────────────────────────────────────
 
@@ -45,6 +77,7 @@ export interface Equipment {
   imageUrl?: string;
   createdAt: string;
   updatedAt: string;
+  installDate?: string;
 }
 
 export interface WorkOrder {
@@ -84,6 +117,31 @@ export interface TroubleReport {
   createdAt: string;
   updatedAt: string;
 }
+
+type TroubleView = {
+  id: string;
+  code: string;
+
+  equipmentId: string;
+  equipmentType: string;
+
+  name: string;
+  date: string;
+  age: number;
+
+  operation: string;
+  reporter: string;
+
+  status: "Alert" | "Open-Pending" | "Open-WO-Done" | "Finished";
+
+  woId: string | null;
+  woStatus: string | null;
+
+  timeline: any[];
+
+  // keep original API status
+  _apiStatus: TroubleStatus;
+};
 
 export interface Schedule {
   id: string;
