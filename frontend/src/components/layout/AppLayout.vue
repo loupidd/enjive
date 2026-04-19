@@ -88,6 +88,11 @@
         </template>
       </nav>
 
+      <!-- LangToggle -->
+      <div class="px-3 pb-1 flex" :class="collapsed ? 'justify-center' : ''">
+        <LangToggle :compact="collapsed" />
+      </div>
+
       <!-- User footer -->
       <div class="border-t border-white/5 p-2 space-y-0.5">
         <!-- Profile link -->
@@ -160,55 +165,15 @@
                 : 'bg-caramel/30 border-caramel/50'
             "
           >
-            <!-- Glowing dot -->
+            <!-- Glowing dot — no icon, just the pill -->
             <div
-              class="theme-dot absolute top-0.5 w-4 h-4 rounded-full shadow-md transition-all duration-300 flex items-center justify-center"
+              class="theme-dot absolute top-0.5 w-4 h-4 rounded-full shadow-md transition-all duration-300"
               :class="
                 theme.isDark
                   ? 'left-0.5 bg-denim-400'
                   : 'left-[18px] bg-caramel'
               "
-            >
-              <!-- Moon (dark mode) -->
-              <svg
-                v-if="theme.isDark"
-                width="8"
-                height="8"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                class="text-denim-900/70"
-              >
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-              <!-- Sun (light mode) -->
-              <svg
-                v-else
-                width="8"
-                height="8"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-                class="text-denim-900"
-              >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="4"
-                  fill="currentColor"
-                  stroke="none"
-                />
-                <line x1="12" y1="2" x2="12" y2="5" />
-                <line x1="12" y1="19" x2="12" y2="22" />
-                <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" />
-                <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
-                <line x1="2" y1="12" x2="5" y2="12" />
-                <line x1="19" y1="12" x2="22" y2="12" />
-                <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" />
-                <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
-              </svg>
-            </div>
+            />
           </div>
           <Transition name="label-fade">
             <span
@@ -220,7 +185,7 @@
                   : 'text-caramel/80 group-hover:text-caramel'
               "
             >
-              {{ theme.isDark ? "🌙 Dark" : "☀️ Light" }}
+              {{ theme.isDark ? "Dark" : "Light" }}
             </span>
           </Transition>
         </button>
@@ -329,9 +294,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { RouterView } from "vue-router";
 import { useAuthStore } from "@/stores/auth.store";
+import { useI18n } from "@/i18n";
+import { useSSE } from "@/composables/useSSE";
+
+const { t } = useI18n();
+const { connected: sseConnected } = useSSE();
+
 import NavItem from "@/components/layout/NavItem.vue";
 import {
   IconChevronLeft,
@@ -352,18 +323,67 @@ const auth = useAuthStore();
 const collapsed = ref(false);
 
 const NAV_MAIN = [
-  { to: "/dashboard", icon: IconDashboard, label: "Dashboard" },
-  { to: "/schedule", icon: IconCalendar, label: "Schedule" },
-  { to: "/work-orders", icon: IconClipboard, label: "Task" },
-  { to: "/trouble", icon: IconAlertTriangle, label: "Trouble", badge: 3 },
-  { to: "/reports", icon: IconBarChart, label: "Graph" },
-  { to: "/equipment", icon: IconCpu, label: "Equipment" },
-  { to: "/activities", icon: IconActivity, label: "Activity" },
+  {
+    to: "/dashboard",
+    icon: IconDashboard,
+    get label() {
+      return t("nav.dashboard");
+    },
+  },
+  {
+    to: "/schedule",
+    icon: IconCalendar,
+    get label() {
+      return t("nav.schedule");
+    },
+  },
+  { to: "/work-orders", icon: IconClipboard, label: t("nav.workOrders") },
+  {
+    to: "/trouble",
+    icon: IconAlertTriangle,
+    get label() {
+      return t("nav.trouble");
+    },
+    badge: 3,
+  },
+  {
+    to: "/reports",
+    icon: IconBarChart,
+    get label() {
+      return t("nav.reports");
+    },
+  },
+  {
+    to: "/equipment",
+    icon: IconCpu,
+    get label() {
+      return t("nav.equipment");
+    },
+  },
+  {
+    to: "/activities",
+    icon: IconActivity,
+    get label() {
+      return t("nav.activities");
+    },
+  },
 ];
 
 const NAV_ADMIN = [
-  { to: "/users", icon: IconUsers, label: "Users" },
-  { to: "/companies", icon: IconBuilding, label: "Site" },
+  {
+    to: "/users",
+    icon: IconUsers,
+    get label() {
+      return t("nav.users");
+    },
+  },
+  {
+    to: "/companies",
+    icon: IconBuilding,
+    get label() {
+      return t("nav.site");
+    },
+  },
 ];
 
 const theme = useThemeStore();
@@ -380,9 +400,14 @@ if (isMobile.value) collapsed.value = true;
 const MOBILE_NAV = [
   { to: "/dashboard", icon: IconDashboard, label: "Home" },
   { to: "/work-orders", icon: IconClipboard, label: "Tasks" },
-  { to: "/trouble", icon: IconAlertTriangle, label: "Trouble", badge: 3 },
-  { to: "/equipment", icon: IconCpu, label: "Equipment" },
-  { to: "/schedule", icon: IconCalendar, label: "Schedule" },
+  {
+    to: "/trouble",
+    icon: IconAlertTriangle,
+    label: t("nav.trouble"),
+    badge: 3,
+  },
+  { to: "/equipment", icon: IconCpu, label: t("nav.equipment") },
+  { to: "/schedule", icon: IconCalendar, label: t("nav.schedule") },
 ];
 
 // Avatar: prefer server-persisted URL from user object, fallback to localStorage cache
