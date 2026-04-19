@@ -2,23 +2,44 @@
   <div class="space-y-4">
     <!-- Header -->
     <div class="flex items-center gap-3 flex-wrap">
-      <button class="flex items-center gap-1.5 text-sm text-caramel hover:text-caramel/80 transition-colors" @click="router.push('/equipment')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <button
+        class="flex items-center gap-1.5 text-sm text-caramel hover:text-caramel/80 transition-colors"
+        @click="router.push('/equipment')"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
         Back
       </button>
-      <div class="h-4 w-px bg-denim-600/50"/>
+      <div class="h-4 w-px bg-denim-600/50" />
       <div>
         <h2 class="text-xl font-bold text-white">{{ typeName }}</h2>
-        <div class="accent-bar mt-1"/>
+        <div class="accent-bar mt-1" />
       </div>
     </div>
 
     <!-- Actions -->
     <div class="flex items-center justify-between gap-3 flex-wrap">
-      <p class="text-sm text-denim-200/50">{{ equipments.length }} equipment(s) registered</p>
+      <p class="text-sm text-denim-200/50">
+        {{ equipments.length }} equipment(s) registered
+      </p>
       <div class="flex gap-2">
-        <button class="btn-secondary text-xs px-3 py-1.5" @click="showActivityList=true">Activity</button>
-        <button class="btn-primary text-xs px-3 py-1.5" @click="openAdd">+ Equipment</button>
+        <button
+          class="btn-secondary text-xs px-3 py-1.5"
+          @click="showActivityList = true"
+        >
+          Activity
+        </button>
+        <button class="btn-primary text-xs px-3 py-1.5" @click="openAdd">
+          + {{ t("equipment.title") }}
+        </button>
       </div>
     </div>
 
@@ -27,39 +48,86 @@
       <table class="w-full text-sm min-w-[640px]">
         <thead>
           <tr class="border-b border-denim-700/40">
-            <th class="text-left px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide">ID / Tag Number</th>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide">Equipment Name</th>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide">Section / System</th>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide">Location</th>
-            <th class="text-center px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide">Critical</th>
-            <th class="text-center px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide">Status</th>
+            <th
+              class="text-left px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide"
+            >
+              ID / Tag Number
+            </th>
+            <th
+              class="text-left px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide"
+            >
+              Equipment Name
+            </th>
+            <th
+              class="text-left px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide"
+            >
+              Section / System
+            </th>
+            <th
+              class="text-left px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide"
+            >
+              Location
+            </th>
+            <th
+              class="text-center px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide"
+            >
+              Critical
+            </th>
+            <th
+              class="text-center px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide"
+            >
+              Status
+            </th>
+            <th
+              class="px-4 py-3 text-xs font-semibold text-denim-200/60 uppercase tracking-wide text-right"
+            >
+              Action
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="eq in equipments" :key="eq.id"
+            v-for="eq in equipments"
+            :key="eq.id"
             class="border-b border-denim-700/20 hover:bg-denim-700/20 transition-colors cursor-pointer"
             @click="goToDetail(eq)"
           >
             <td class="px-4 py-3">
-              <span class="font-mono text-xs text-caramel font-semibold hover:underline">{{ eq.id }}</span>
+              <span
+                class="font-mono text-xs text-caramel font-semibold hover:underline"
+                >{{ eq.id }}</span
+              >
             </td>
             <td class="px-4 py-3 font-medium text-white">{{ eq.name }}</td>
             <td class="px-4 py-3 text-denim-100/70">{{ eq.section }}</td>
-            <td class="px-4 py-3 text-denim-100/70 text-xs">{{ eq.location }}</td>
+            <td class="px-4 py-3 text-denim-100/70 text-xs">
+              {{ eq.location }}
+            </td>
             <td class="px-4 py-3 text-center">
-              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold" :class="criticalColor(eq.criticalLevel)">
+              <span
+                class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold"
+                :class="criticalColor(eq.criticalLevel)"
+              >
                 {{ eq.criticalLevel }}
               </span>
             </td>
             <td class="px-4 py-3 text-center">
-              <span class="text-xs px-2 py-0.5 rounded-full font-medium" :class="eq.status==='Active'?'bg-green-500/15 text-green-400':'bg-red-500/15 text-red-400'">
+              <span
+                class="text-xs px-2 py-0.5 rounded-full font-medium"
+                :class="
+                  eq.status === 'Active'
+                    ? 'bg-green-500/15 text-green-400'
+                    : 'bg-red-500/15 text-red-400'
+                "
+              >
                 {{ eq.status }}
               </span>
             </td>
           </tr>
           <tr v-if="!equipments.length">
-            <td colspan="6" class="px-4 py-10 text-center text-denim-200/40">No equipment in this group</td>
+            <td colspan="6" class="px-4 py-10 text-center text-denim-200/40">
+              {{ t("equipment.noEquipment") }}
+            </td>
           </tr>
         </tbody>
       </table>
@@ -68,27 +136,161 @@
     <!-- Activity List Drawer -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="showActivityList" class="fixed inset-0 z-50 flex items-center justify-end" @click.self="showActivityList=false">
-          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"/>
-          <div class="relative bg-denim-800 border-l border-denim-600/40 w-full max-w-md h-full overflow-y-auto">
-            <div class="flex items-center justify-between px-5 py-4 border-b border-denim-700/40 sticky top-0 bg-denim-800 z-10">
+        <div
+          v-if="showActivityList"
+          class="fixed inset-0 z-50 flex items-center justify-end"
+          @click.self="showActivityList = false"
+        >
+          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div
+            class="relative bg-denim-800 border-l border-denim-600/40 w-full max-w-md h-full overflow-y-auto"
+          >
+            <div
+              class="flex items-center justify-between px-5 py-4 border-b border-denim-700/40 sticky top-0 bg-denim-800 z-10"
+            >
               <h3 class="font-bold text-white">Activities — {{ typeName }}</h3>
-              <button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-denim-200/50" @click="showActivityList=false">✕</button>
+              <button
+                class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-denim-200/50"
+                @click="showActivityList = false"
+              >
+                ✕
+              </button>
             </div>
             <div class="p-4">
-              <p class="text-xs text-denim-200/50 mb-3">Defined activities for this equipment type</p>
+              <p class="text-xs text-denim-200/50 mb-3">
+                Defined activities for this equipment type
+              </p>
               <div class="space-y-2 mb-4">
-                <div v-for="a in activities" :key="a.id" class="card p-3 flex items-center justify-between">
+                <div
+                  v-for="a in activities"
+                  :key="a.id"
+                  class="card p-3 flex items-center justify-between"
+                >
                   <div>
                     <p class="text-sm font-medium text-white">{{ a.name }}</p>
-                    <p class="text-xs text-denim-200/50 mt-0.5">{{ a.classification }} · {{ a.interval }} · {{ a.type }}</p>
+                    <p class="text-xs text-denim-200/50 mt-0.5">
+                      {{ a.classification }} · {{ a.interval }} · {{ a.type }}
+                    </p>
                   </div>
-                  <span class="text-xs px-2 py-0.5 rounded font-medium" :class="a.status==='Enable'?'bg-green-500/15 text-green-400':'bg-denim-600/50 text-denim-200/50'">{{ a.status }}</span>
+                  <span
+                    class="text-xs px-2 py-0.5 rounded font-medium"
+                    :class="
+                      a.status === 'Enable'
+                        ? 'bg-green-500/15 text-green-400'
+                        : 'bg-denim-600/50 text-denim-200/50'
+                    "
+                    >{{ a.status }}</span
+                  >
                 </div>
-                <p v-if="!activities.length" class="text-xs text-denim-200/40 text-center py-6">No activities defined yet</p>
+                <p
+                  v-if="!activities.length"
+                  class="text-xs text-denim-200/40 text-center py-6"
+                >
+                  No activities defined yet
+                </p>
               </div>
-              <button class="btn-primary w-full justify-center text-sm" @click="router.push('/activities')">
-                + Manage Activities
+              <button
+                class="btn-primary w-full justify-center text-sm"
+                @click="router.push('/work-orders')"
+              >
+                View All Work Orders →
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Maintenance History Drawer -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showMaintHistory"
+          class="fixed inset-0 z-50 flex items-center justify-end"
+          @click.self="showMaintHistory = false"
+        >
+          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div
+            class="relative bg-denim-800 border-l border-denim-600/40 w-full max-w-md h-full overflow-y-auto"
+          >
+            <div
+              class="flex items-center justify-between px-5 py-4 border-b border-denim-700/40 sticky top-0 bg-denim-800 z-10"
+            >
+              <div>
+                <h3 class="font-bold text-white">
+                  {{ t("equipment.maintenance") }}
+                </h3>
+                <p class="text-xs text-caramel font-mono mt-0.5">
+                  {{ selectedEq?.id }}
+                </p>
+              </div>
+              <button
+                class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-denim-200/50"
+                @click="showMaintHistory = false"
+              >
+                ✕
+              </button>
+            </div>
+            <div class="p-4 space-y-2">
+              <div
+                v-if="woLoading"
+                class="flex items-center gap-2 text-xs text-denim-200/40 py-4"
+              >
+                <svg
+                  class="animate-spin w-3.5 h-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+                Loading...
+              </div>
+              <div
+                v-for="wo in eqWOs"
+                :key="wo.id"
+                class="card p-3 cursor-pointer hover:border-caramel/30 transition-colors"
+                @click="goToWODetail(wo)"
+              >
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-white truncate">
+                      {{ wo.title }}
+                    </p>
+                    <p class="text-xs font-mono text-caramel/70 mt-0.5">
+                      {{ wo.code }}
+                    </p>
+                    <p class="text-xs text-denim-200/50 mt-1">
+                      {{ wo.createdAt?.slice(0, 10) }}
+                    </p>
+                  </div>
+                  <span
+                    class="text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0"
+                    :class="
+                      wo.status === 'COMPLETED' || wo.status === 'CLOSED'
+                        ? 'bg-green-500/15 text-green-400'
+                        : wo.status === 'IN_PROGRESS' ||
+                            wo.status === 'ASSIGNED'
+                          ? 'bg-caramel/15 text-caramel'
+                          : 'bg-denim-600/40 text-denim-200/50'
+                    "
+                  >
+                    {{ wo.status }}
+                  </span>
+                </div>
+              </div>
+              <p
+                v-if="!woLoading && !eqWOs.length"
+                class="text-xs text-denim-200/40 text-center py-8"
+              >
+                Belum ada riwayat maintenance
+              </p>
+              <button
+                class="btn-primary w-full justify-center text-sm mt-2"
+                @click="router.push('/work-orders')"
+              >
+                Lihat Semua Work Order →
               </button>
             </div>
           </div>
@@ -99,46 +301,116 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, computed, onMounted } from "vue";
+import { useI18n } from "@/i18n";
 
-const router = useRouter()
-const route  = useRoute()
-const typeId = Number(route.params.typeId)
+const { t } = useI18n();
 
-const typeName = computed(() => {
-  const names: Record<number,string> = {1:"AC Fasilitas",2:"Genset",3:"Panel Listrik",4:"CCTV",5:"Fire Alarm",6:"Pompa Air",7:"Lift / Elevator"}
-  return names[typeId] ?? "Equipment"
-})
+import { useRouter, useRoute } from "vue-router";
+import { useEquipment } from "@/composables/useEquipment";
+import { useWorkOrders } from "@/composables/useWorkOrders";
 
-const showActivityList = ref(false)
+const router = useRouter();
+const route = useRoute();
 
-const equipments = ref([
-  {id:"EDA_EM1_1_AC_LOBBY",       name:"AC LOBBY",          section:"Air Conditioner",  location:"Lantai 1", criticalLevel:3, status:"Active"},
-  {id:"EDA_EM1_2_AC_FUNC_ROOM_1", name:"AC FUNCTION ROOM",  section:"Air Conditioner",  location:"Lantai 2", criticalLevel:2, status:"Active"},
-  {id:"EDA_EM1_3_AC_LOBBY_B1",    name:"AC LOBBY B1",       section:"Air Conditioner",  location:"Basement 1",criticalLevel:2,status:"Active"},
-  {id:"EDA_EM1_4_AC_OFFICE",      name:"AC OFFICE",         section:"Air Conditioner",  location:"Lantai 3", criticalLevel:1, status:"Active"},
-  {id:"EDA_EM1_5_AC_MEETING_R1",  name:"AC MEETING ROOM 1", section:"Air Conditioner",  location:"Lantai 4", criticalLevel:2, status:"Active"},
-])
+const categoryName = computed(() =>
+  decodeURIComponent(String(route.params.typeId ?? "")),
+);
+const typeName = computed(() => categoryName.value || "Equipment");
+
+const {
+  items: eqItems,
+  loading: eqLoading,
+  error: eqError,
+  fetchAll: fetchEquipment,
+} = useEquipment();
+
+onMounted(() => {
+  // fetchAll handles pagination — category filter passed as search for partial match
+  const params: Record<string, unknown> = {};
+  if (categoryName.value) params.search = categoryName.value;
+  fetchEquipment({ ...params, limit: 500 });
+});
+
+const showActivityList = ref(false);
+
+const equipments = computed(() =>
+  eqItems.value.map((eq) => ({
+    id: eq.code,
+    name: eq.name,
+    section: eq.category,
+    location: eq.location ?? "—",
+    criticalLevel: 2,
+    status: eq.status === "OPERATIONAL" ? "Active" : eq.status,
+    _raw: eq,
+  })),
+);
 
 const activities = ref([
-  {id:1, name:"Cleaning Filter",       classification:"Preventive",  interval:"Monthly",    type:"Cleaning",  status:"Enable"},
-  {id:2, name:"Cek Freon",             classification:"Preventive",  interval:"3 Monthly",  type:"Measurement",status:"Enable"},
-  {id:3, name:"Thermography Check",    classification:"Thermography Investigation", interval:"6 Monthly", type:"Thermographic Investigation", status:"Enable"},
-])
+  {
+    id: 1,
+    name: "Cleaning Filter",
+    classification: "Preventive",
+    interval: "Monthly",
+    type: "Cleaning",
+    status: "Enable",
+  },
+  {
+    id: 2,
+    name: "Cek Freon",
+    classification: "Preventive",
+    interval: "3 Monthly",
+    type: "Measurement",
+    status: "Enable",
+  },
+  {
+    id: 3,
+    name: "Thermography Check",
+    classification: "Thermography Investigation",
+    interval: "6 Monthly",
+    type: "Thermographic Investigation",
+    status: "Enable",
+  },
+]);
 
-function goToDetail(eq: any) { router.push({ name: 'EquipmentDetail', params: { eqId: eq.id } }) }
-function openAdd() { router.push('/equipment') }
+// Maintenance history per equipment
+const selectedEq = ref<any>(null);
+const showMaintHistory = ref(false);
+const { items: eqWOs, loading: woLoading, fetch: fetchEqWOs } = useWorkOrders();
+
+function openMaintenanceHistory(eq: any) {
+  selectedEq.value = eq;
+  showMaintHistory.value = true;
+  fetchEqWOs({ equipmentId: eq._raw?.id ?? eq.id, limit: 20 });
+}
+
+function goToWODetail(wo: any) {
+  showMaintHistory.value = false;
+  router.push(`/work-orders/${wo.id}`);
+}
+
+function goToDetail(eq: any) {
+  router.push({ name: "EquipmentDetail", params: { eqId: eq.id } });
+}
+function openAdd() {
+  router.push("/equipment");
+}
 
 function criticalColor(level: number) {
-  if(level>=4) return 'bg-red-500/20 text-red-400'
-  if(level===3) return 'bg-orange-500/20 text-orange-300'
-  if(level===2) return 'bg-yellow-500/20 text-yellow-300'
-  return 'bg-denim-600/40 text-denim-200/60'
+  if (level >= 4) return "bg-red-500/20 text-red-400";
+  if (level === 3) return "bg-orange-500/20 text-orange-300";
+  if (level === 2) return "bg-yellow-500/20 text-yellow-300";
+  return "bg-denim-600/40 text-denim-200/60";
 }
 </script>
 
 <style scoped>
-.modal-enter-active,.modal-leave-active{transition:opacity .2s ease}
-.modal-enter-from,.modal-leave-to{opacity:0}
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
 </style>
