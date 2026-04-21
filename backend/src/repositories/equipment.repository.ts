@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma.js";
 import type {
   CreateEquipmentDto,
@@ -76,11 +77,28 @@ export class EquipmentRepository {
   }
 
   async create(data: CreateEquipmentDto) {
-    return prisma.equipment.create({ data });
+    const { specifications, ...rest } = data as any;
+    return prisma.equipment.create({
+      data: {
+        ...rest,
+        ...(specifications !== undefined && {
+          specifications: specifications as Prisma.InputJsonValue,
+        }),
+      },
+    });
   }
 
   async update(id: string, data: UpdateEquipmentDto) {
-    return prisma.equipment.update({ where: { id }, data });
+    const { specifications, ...rest } = data as any;
+    return prisma.equipment.update({
+      where: { id },
+      data: {
+        ...rest,
+        ...(specifications !== undefined && {
+          specifications: specifications as Prisma.InputJsonValue,
+        }),
+      },
+    });
   }
 
   async softDelete(id: string) {

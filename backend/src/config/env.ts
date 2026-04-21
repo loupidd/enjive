@@ -18,6 +18,7 @@ const envSchema = z.object({
   UPLOAD_DRIVER: z.enum(["local", "s3"]).default("local"),
   UPLOAD_LOCAL_PATH: z.string().default("./uploads"),
   UPLOAD_MAX_SIZE_MB: z.coerce.number().default(20),
+  UPLOADS_DIR: z.string().default("/uploads"),
 
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace"])
