@@ -394,10 +394,12 @@
         </p>
       </div>
     </div>
+    <ToastBar />
   </div>
 </template>
 
 <script setup lang="ts">
+import ToastBar from "@/components/common/ToastBar.vue";
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth.store";

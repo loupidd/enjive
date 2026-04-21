@@ -290,6 +290,7 @@
         </RouterLink>
       </nav>
     </div>
+    <ToastBar />
   </div>
 </template>
 
@@ -299,9 +300,11 @@ import { RouterView } from "vue-router";
 import { useAuthStore } from "@/stores/auth.store";
 import { useI18n } from "@/i18n";
 import { useSSE } from "@/composables/useSSE";
+import LangToggle from "@/components/common/LangToggle.vue";
+import ToastBar from "@/components/common/ToastBar.vue";
 
 const { t } = useI18n();
-const { connected: sseConnected } = useSSE();
+const { connected: sseConnected, expired: sseExpired } = useSSE();
 
 import NavItem from "@/components/layout/NavItem.vue";
 import {
