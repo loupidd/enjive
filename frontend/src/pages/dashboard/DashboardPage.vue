@@ -183,10 +183,12 @@
             </p>
           </div>
           <span class="text-lg font-bold text-caramel">{{
-            statusYear.reduce((a, b) => a + b.value, 0).toLocaleString()
+            statusThisMonth
+              .reduce((a: any, b: any) => a + b.value, 0)
+              .toLocaleString()
           }}</span>
         </div>
-        <HBarChart :data="statusYear" />
+        <HBarChart :data="statusThisMonth" />
       </div>
       <div class="card">
         <div class="flex items-center justify-between mb-4">
@@ -195,10 +197,12 @@
             <p class="text-[11px] text-denim-200/40 mt-0.5">February 2026</p>
           </div>
           <span class="text-lg font-bold text-caramel">{{
-            statusLastMonth.reduce((a, b) => a + b.value, 0).toLocaleString()
+            statusThisMonth
+              .reduce((a: any, b: any) => a + b.value, 0)
+              .toLocaleString()
           }}</span>
         </div>
-        <HBarChart :data="statusLastMonth" />
+        <HBarChart :data="statusThisMonth" />
       </div>
     </div>
 
@@ -622,12 +626,12 @@ const mkClass = (prev: number, cert: number, corr: number, pred: number) => [
   { label: "Predictive", value: pred, color: COLORS.predictive },
 ];
 const classYear = computed(() => {
-  const d = dashData.value?.byType;
+  const d = (dashData.value as any)?.byType;
   return mkClass(d?.PREVENTIVE ?? 0, 0, d?.CORRECTIVE ?? 0, d?.INSPECTION ?? 0);
 });
 const classLastMonth = computed(() => mkClass(0, 0, 0, 0));
 const classThisMonth = computed(() => {
-  const d = dashData.value?.byType;
+  const d = (dashData.value as any)?.byType;
   return mkClass(d?.PREVENTIVE ?? 0, 0, d?.CORRECTIVE ?? 0, 0);
 });
 
@@ -654,7 +658,7 @@ const SL = [
 
 // Status bars from API
 const statusThisMonth = computed(() => {
-  const byStatus = dashData.value?.byStatus ?? {};
+  const byStatus = (dashData.value as any)?.byStatus ?? {};
   return SL.map((l) => {
     const key =
       l === "Waiting"

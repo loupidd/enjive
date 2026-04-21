@@ -315,7 +315,7 @@
                   v-for="(r, i) in maintenanceRecords"
                   :key="r.id"
                   class="border-b border-denim-700/10 hover:bg-denim-700/10 cursor-pointer"
-                  @click="router.push(\`/work-orders/\${r._woId}\`)"
+                  @click="router.push(`/work-orders/\${r._woId}\`)"
                 >
                   <td class="px-3 py-2.5 text-denim-200/30">{{ i + 1 }}</td>
                   <td
@@ -513,7 +513,7 @@
                   v-for="(r, i) in activeWOs"
                   :key="r.id"
                   class="border-b border-denim-700/10 hover:bg-denim-700/10 cursor-pointer"
-                  @click="router.push(`/work-orders/${r._woId}`)"
+                  @click="router.push('/work-orders/' + r._woId)"
                 >
                   <td class="px-3 py-2.5 text-denim-200/30">{{ i + 1 }}</td>
                   <td class="px-3 py-2.5 font-mono text-caramel text-[10px]">
@@ -703,183 +703,294 @@
 </template>
 
 <script setup lang="ts">
-import { useEquipment } from "@/composables/useEquipment"
-import { useWorkOrders } from "@/composables/useWorkOrders"
-import { ref, computed, watch, nextTick, onMounted } from "vue"
-import { useI18n }       from "@/i18n"
+import { useEquipment } from "@/composables/useEquipment";
+import { useWorkOrders } from "@/composables/useWorkOrders";
+import { ref, computed, watch, nextTick, onMounted } from "vue";
+import { useI18n } from "@/i18n";
 
-const { t } = useI18n()
-import { useRouter, useRoute } from "vue-router"
+const { t } = useI18n();
+import { useRouter, useRoute } from "vue-router";
 import {
-  IconArrowLeft, IconPencil, IconPrint, IconTrash, IconZap,
-  IconClipboard, IconCpu, IconActivity, IconBarChart, IconClock,
-  IconAlertTriangle, IconMapPin, IconTag, IconCalendar,
-  IconQrCode, IconFileDown, IconSliders, IconChevronDown,
-  IconImage, IconUpload, IconDownload, IconX, IconExternalLink
-} from "@/components/icons"
+  IconArrowLeft,
+  IconPencil,
+  IconPrint,
+  IconTrash,
+  IconZap,
+  IconClipboard,
+  IconCpu,
+  IconActivity,
+  IconBarChart,
+  IconClock,
+  IconAlertTriangle,
+  IconMapPin,
+  IconTag,
+  IconCalendar,
+  IconQrCode,
+  IconFileDown,
+  IconSliders,
+  IconChevronDown,
+  IconImage,
+  IconUpload,
+  IconDownload,
+  IconX,
+  IconExternalLink,
+} from "@/components/icons";
 
-const router = useRouter()
-const route  = useRoute()
-const router = useRouter()
-const eqId   = route.params.eqId as string
+const router = useRouter();
+const route = useRoute();
+const eqId = route.params.eqId as string;
 
-const activeTab = ref("maintenance")
-const showQR    = ref(false)
-const qrCanvas  = ref<HTMLCanvasElement | null>(null)
-const qrUrl     = computed(() => `${window.location.origin}/eq/${eq.value.id}`)
+const activeTab = ref("maintenance");
+const showQR = ref(false);
+const qrCanvas = ref<HTMLCanvasElement | null>(null);
+const qrUrl = computed(() => `${window.location.origin}/eq/${eq.value.id}`);
 
 // Generate QR when modal opens
 watch(showQR, async (val) => {
-  if (!val) return
-  await nextTick()
-  const canvas = qrCanvas.value
-  if (!canvas) return
+  if (!val) return;
+  await nextTick();
+  const canvas = qrCanvas.value;
+  if (!canvas) return;
   // Simple QR pattern using the Google Charts API via image
   // We draw it to canvas via an image element
-  const url = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrUrl.value)}&format=png&bgcolor=ffffff&color=02314E`
-  const img = new Image()
-  img.crossOrigin = "anonymous"
+  const url = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrUrl.value)}&format=png&bgcolor=ffffff&color=02314E`;
+  const img = new Image();
+  img.crossOrigin = "anonymous";
   img.onload = () => {
-    const ctx = canvas.getContext("2d")
-    if (ctx) { ctx.clearRect(0,0,160,160); ctx.drawImage(img,0,0,160,160) }
-  }
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.clearRect(0, 0, 160, 160);
+      ctx.drawImage(img, 0, 0, 160, 160);
+    }
+  };
   img.onerror = () => {
     // Fallback: draw simple placeholder pattern
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-    ctx.fillStyle = "#ffffff"
-    ctx.fillRect(0,0,160,160)
-    ctx.fillStyle = "#02314E"
-    const size = 8
-    for (let r=0; r<20; r++) {
-      for (let c=0; c<20; c++) {
-        if ((r+c)%3===0 || (r*c)%5===1) ctx.fillRect(c*size, r*size, size-1, size-1)
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 160, 160);
+    ctx.fillStyle = "#02314E";
+    const size = 8;
+    for (let r = 0; r < 20; r++) {
+      for (let c = 0; c < 20; c++) {
+        if ((r + c) % 3 === 0 || (r * c) % 5 === 1)
+          ctx.fillRect(c * size, r * size, size - 1, size - 1);
       }
     }
-  }
-  img.src = url
-})
+  };
+  img.src = url;
+});
 
 function downloadQR() {
-  const canvas = qrCanvas.value
-  if (!canvas) return
-  const a = document.createElement("a")
-  a.download = `QR_${eq.value.id}.png`
-  a.href = canvas.toDataURL("image/png")
-  a.click()
+  const canvas = qrCanvas.value;
+  if (!canvas) return;
+  const a = document.createElement("a");
+  a.download = `QR_${eq.value.id}.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
 }
-const showEdit  = ref(false)
-const showSpecs = ref(true)
+const showEdit = ref(false);
+const showSpecs = ref(true);
 
 const TABS = [
-  { key:"maintenance", get label(){ return t("equipment.maintenance") }, icon: IconClipboard },
-  { key:"trouble",     get label(){ return t("equipment.trouble") }, icon: IconAlertTriangle },
-  { key:"activities",  get label(){ return t("nav.activities") }, icon: IconActivity },
-  { key:"active-wo",   get label(){ return t("equipment.activeWO") }, icon: IconZap },
-  { key:"stats",       get label(){ return t("equipment.statistics") }, icon: IconBarChart },
-]
+  {
+    key: "maintenance",
+    get label() {
+      return t("equipment.maintenance");
+    },
+    icon: IconClipboard,
+  },
+  {
+    key: "trouble",
+    get label() {
+      return t("equipment.trouble");
+    },
+    icon: IconAlertTriangle,
+  },
+  {
+    key: "activities",
+    get label() {
+      return t("nav.activities");
+    },
+    icon: IconActivity,
+  },
+  {
+    key: "active-wo",
+    get label() {
+      return t("equipment.activeWO");
+    },
+    icon: IconZap,
+  },
+  {
+    key: "stats",
+    get label() {
+      return t("equipment.statistics");
+    },
+    icon: IconBarChart,
+  },
+];
 
 // ── Real equipment data from API ──────────────────────────────
 
-const { items: eqList, fetch: fetchEq } = useEquipment()
-const { items: eqWOs, loading: wosLoading, fetch: fetchWOs } = useWorkOrders()
+const { items: eqList, fetch: fetchEq } = useEquipment();
+const { items: eqWOs, loading: wosLoading, fetch: fetchWOs } = useWorkOrders();
 
 onMounted(async () => {
   // Fetch equipment by code (eqId is the code like EDA_EM1_2_AC)
-  await fetchEq({ search: eqId, limit: 5 })
+  await fetchEq({ search: eqId, limit: 5 });
   // Fetch WOs for this equipment
-  const found = eqList.value[0]
-  if (found) await fetchWOs({ equipmentId: found.id, limit: 50 })
-})
+  const found = eqList.value[0];
+  if (found) await fetchWOs({ equipmentId: found.id, limit: 50 });
+});
 
-const apiEq = computed(() => eqList.value[0] ?? null)
+const apiEq = computed(() => eqList.value[0] ?? null);
 
 const eq = ref({
   id: eqId || "",
-  name: "", classification:"", type:"",
-  plant:"Essence Darmawangsa Apartment", section:"",
-  location:"", lat:"", lng:"",
-  criticalLevel:2, serial:"", model:"", capacity:"", brand:"", vendor:"",
-  maintainer:"PT Sumber Sarana Solusindo", installDate:"",
-  other:"", status:"Active",
-})
+  name: "",
+  classification: "",
+  type: "",
+  plant: "Essence Darmawangsa Apartment",
+  section: "",
+  location: "",
+  lat: "",
+  lng: "",
+  criticalLevel: 2,
+  serial: "",
+  model: "",
+  capacity: "",
+  brand: "",
+  vendor: "",
+  maintainer: "PT Sumber Sarana Solusindo",
+  installDate: "",
+  other: "",
+  status: "Active",
+});
 
 // Merge real API data when loaded
-watch(apiEq, (api) => {
-  if (!api) return
-  eq.value.id       = api.code
-  eq.value.name     = api.name
-  eq.value.type     = api.category
-  eq.value.location = api.location ?? eq.value.location
-  eq.value.status   = api.status === "OPERATIONAL" ? "Active" : api.status
-}, { immediate: true })
+watch(
+  apiEq,
+  (api) => {
+    if (!api) return;
+    eq.value.id = api.code;
+    eq.value.name = api.name;
+    eq.value.type = api.category;
+    eq.value.location = api.location ?? eq.value.location;
+    eq.value.status = api.status === "OPERATIONAL" ? "Active" : api.status;
+  },
+  { immediate: true },
+);
 
 const specRows = computed(() => [
-  {label:"Classification", value:eq.value.classification},
-  {label:"Plant / Site",   value:eq.value.plant},
-  {label:"Maintainer",     value:eq.value.maintainer},
-  {label:"Model Number",   value:eq.value.model},
-  {label:"Serial Number",  value:eq.value.serial},
-  {label:"Size/Capacity",  value:eq.value.capacity},
-  {label:"Brand/Maker",    value:eq.value.brand},
-  {label:"Vendor",         value:eq.value.vendor},
-])
+  { label: "Classification", value: eq.value.classification },
+  { label: "Plant / Site", value: eq.value.plant },
+  { label: "Maintainer", value: eq.value.maintainer },
+  { label: "Model Number", value: eq.value.model },
+  { label: "Serial Number", value: eq.value.serial },
+  { label: "Size/Capacity", value: eq.value.capacity },
+  { label: "Brand/Maker", value: eq.value.brand },
+  { label: "Vendor", value: eq.value.vendor },
+]);
 
 // Stats computed from real WO/trouble data
 const statsRows = computed(() => {
-  const totalWOs    = eqWOs.value.length
-  const completedWOs = eqWOs.value.filter(w => w.status === "COMPLETED" || w.status === "CLOSED").length
-  const installDate = apiEq.value?.installDate ?? eq.value.installDate
+  const totalWOs = eqWOs.value.length;
+  const completedWOs = eqWOs.value.filter(
+    (w) => w.status === "COMPLETED" || w.status === "CLOSED",
+  ).length;
+  const installDate = apiEq.value?.installDate ?? eq.value.installDate;
   return [
-    { label: "Active Since",  value: installDate || "—" },
+    { label: "Active Since", value: installDate || "—" },
     { label: "Total WOs", value: String(totalWOs) },
-    { label: "Completed WOs",     value: String(completedWOs) },
-    { label: "Total Downtime",    value: "—" },
-    { label: "MTBF",              value: "—" },
-    { label: "MTTR",              value: "—" },
-  ]
-})
+    { label: "Completed WOs", value: String(completedWOs) },
+    { label: "Total Downtime", value: "—" },
+    { label: "MTBF", value: "—" },
+    { label: "MTTR", value: "—" },
+  ];
+});
 
 // Maintenance records from real API — WOs for this equipment
 const maintenanceRecords = computed(() =>
-  eqWOs.value.filter(w => w.status === "COMPLETED" || w.status === "CLOSED").map(w => ({
-    id:             w.code,
-    _woId:          w.id,
-    date:           w.completedAt?.slice(0,10) ?? w.createdAt?.slice(0,10) ?? "—",
-    classification: w.type === "PREVENTIVE" ? "Preventive"
-                  : w.type === "CORRECTIVE" ? "Corrective"
-                  : w.type === "INSPECTION" ? "Predictive" : w.type,
-    interval:       "Monthly",
-    woStatus:       "Finish",
-    operation:      "Operasi",
-    healthy:        "Good",
-  }))
-)
+  eqWOs.value
+    .filter((w: any) => w.status === "COMPLETED" || w.status === "CLOSED")
+    .map((w: any) => ({
+      id: w.code,
+      _woId: w.id,
+      date: (w.completedAt ?? w.createdAt ?? "").slice(0, 10) || "—",
+      classification:
+        w.type === "PREVENTIVE"
+          ? "Preventive"
+          : w.type === "CORRECTIVE"
+            ? "Corrective"
+            : w.type === "INSPECTION"
+              ? "Predictive"
+              : w.type,
+      interval: "Monthly",
+      woStatus: "Finish",
+      operation: "Operasi",
+      healthy: "Good",
+    })),
+);
 const troubleRecords = ref([
   // Real trouble records loaded from API via useTrouble composable
-])
+]);
 // Activities for this equipment type — loaded from /activities API
-const eqActivities = ref<any[]>([])
+const eqActivities = ref<any[]>([]);
 const activeWOs = computed(() =>
-  eqWOs.value.filter(w => !["COMPLETED","CLOSED","CANCELLED"].includes(w.status)).map(w => ({
-    id:             w.code,
-    _woId:          w.id,
-    date:           w.createdAt?.slice(0,10) ?? "—",
-    classification: w.type === "PREVENTIVE" ? "Preventive"
-                  : w.type === "CORRECTIVE" ? "Corrective" : "Predictive",
-    interval:       "Monthly",
-    woStatus:       w.status === "IN_PROGRESS" || w.status === "ASSIGNED" ? "Process" : "Waiting",
-    technician:     (w as any).assignedTo
-                    ? \`\${(w as any).assignedTo.firstName} \${(w as any).assignedTo.lastName}\`
-                    : "Unassigned",
-  }))
-)
+  eqWOs.value
+    .filter((w) => !["COMPLETED", "CLOSED", "CANCELLED"].includes(w.status))
+    .map((w) => ({
+      id: w.code,
+      _woId: w.id,
+      date: w.createdAt?.slice(0, 10) ?? "—",
+      classification:
+        w.type === "PREVENTIVE"
+          ? "Preventive"
+          : w.type === "CORRECTIVE"
+            ? "Corrective"
+            : "Predictive",
+      interval: "Monthly",
+      woStatus:
+        w.status === "IN_PROGRESS" || w.status === "ASSIGNED"
+          ? "Process"
+          : "Waiting",
+      technician: (w as any).assignedTo
+        ? (w as any).assignedTo.firstName + " " + (w as any).assignedTo.lastName
+        : "Unassigned",
+    })),
+);
 
-function criticalClass(l:number){ return l>=4?"bg-red-500/15 text-red-400 border-red-500/25":l===3?"bg-orange-500/15 text-orange-300 border-orange-500/25":l===2?"bg-yellow-500/15 text-yellow-300 border-yellow-500/25":"bg-denim-600/30 text-denim-200/50 border-denim-600/30" }
-function classColor(c:string){ if(c==="Preventive")return"bg-blue-500/15 text-blue-300";if(c==="Corrective")return"bg-green-500/15 text-green-300";if(c==="Predictive")return"bg-orange-500/15 text-orange-300";return"bg-purple-500/15 text-purple-300" }
-function woColor(s:string){ if(s==="Finish")return"bg-green-500/15 text-green-400";if(s==="Process")return"bg-caramel/15 text-caramel";if(s==="Waiting")return"bg-denim-600/50 text-denim-200";return"bg-denim-600/50 text-denim-200" }
-function opColor(op:string){ if(op==="Down")return"bg-red-500/20 text-red-400";if(op==="Standby")return"bg-yellow-500/20 text-yellow-300";return"bg-green-500/20 text-green-400" }
-function tStatus(s:string){ if(s==="Finished")return"bg-green-500/15 text-green-400";if(s==="Open")return"bg-yellow-400/15 text-yellow-300";return"bg-red-500/15 text-red-400" }
+function criticalClass(l: number) {
+  return l >= 4
+    ? "bg-red-500/15 text-red-400 border-red-500/25"
+    : l === 3
+      ? "bg-orange-500/15 text-orange-300 border-orange-500/25"
+      : l === 2
+        ? "bg-yellow-500/15 text-yellow-300 border-yellow-500/25"
+        : "bg-denim-600/30 text-denim-200/50 border-denim-600/30";
+}
+function classColor(c: string) {
+  if (c === "Preventive") return "bg-blue-500/15 text-blue-300";
+  if (c === "Corrective") return "bg-green-500/15 text-green-300";
+  if (c === "Predictive") return "bg-orange-500/15 text-orange-300";
+  return "bg-purple-500/15 text-purple-300";
+}
+function woColor(s: string) {
+  if (s === "Finish") return "bg-green-500/15 text-green-400";
+  if (s === "Process") return "bg-caramel/15 text-caramel";
+  if (s === "Waiting") return "bg-denim-600/50 text-denim-200";
+  return "bg-denim-600/50 text-denim-200";
+}
+function opColor(op: string) {
+  if (op === "Down") return "bg-red-500/20 text-red-400";
+  if (op === "Standby") return "bg-yellow-500/20 text-yellow-300";
+  return "bg-green-500/20 text-green-400";
+}
+function tStatus(s: string) {
+  if (s === "Finished") return "bg-green-500/15 text-green-400";
+  if (s === "Open") return "bg-yellow-400/15 text-yellow-300";
+  return "bg-red-500/15 text-red-400";
+}
 </script>
 
 <style scoped>

@@ -848,8 +848,12 @@ const actTypeToClass: Record<string, string> = {
   LUBRICATION: "Preventive",
   TESTING: "Predictive",
 };
-const events = computed(() =>
-  schedItems.value.map((s) => ({
+const events = ref<any[]>([]);
+
+onMounted(async () => {
+  await fetchSchedules();
+
+  events.value = schedItems.value.map((s) => ({
     id: s.id,
     equipmentId: s.equipmentId,
     equipmentType: (s as any).equipment?.name ?? "—",
@@ -862,8 +866,8 @@ const events = computed(() =>
     repeat: s.frequency !== "ONCE",
     woStatus: null,
     isActive: s.isActive,
-  })),
-);
+  }));
+});
 
 // ── Calendar cells ────────────────────────────────────────────
 const calendarCells = computed(() => {
@@ -915,7 +919,7 @@ const showModal = ref(false);
 const showDetail = ref(false);
 const showMultiWO = ref(false);
 const editMode = ref(false);
-const editingId = ref<number | null>(null);
+const editingId = ref<string | null>(null);
 const detailEvent = ref<any>(null);
 const selectedDateLabel = ref("");
 const form = ref({
@@ -988,7 +992,7 @@ function assignToTask() {
     (e) =>
       e.equipmentId === form.value.equipmentId && e.date === form.value.date,
   );
-  if (target) target.woStatus = "Waiting";
+  if (target) (target as any).woStatus = "Waiting";
 }
 function assignFromDetail(ev: any) {
   if (!ev) return;
@@ -998,7 +1002,7 @@ function assignFromDetail(ev: any) {
 
 // Multiple WO
 const multiFilter = ref({ classification: "", interval: "", search: "" });
-const multiSelected = ref<number[]>([]);
+const multiSelected = ref<string[]>([]);
 
 function openMultiWO() {
   multiSelected.value = [];
@@ -1024,7 +1028,7 @@ const filteredMultiEvents = computed(() => {
 
 function createMultiWO() {
   events.value.forEach((ev) => {
-    if (multiSelected.value.includes(ev.id)) ev.woStatus = "Waiting";
+    if (multiSelected.value.includes(ev.id)) (ev as any).woStatus = "Waiting";
   });
   showMultiWO.value = false;
   multiSelected.value = [];
@@ -1039,7 +1043,7 @@ const duplicateWarning = computed(() => {
       e.equipmentId === form.value.equipmentId &&
       e.classification === form.value.classification &&
       e.date === form.value.date &&
-      e.id !== editingId.value,
+      String(e.id) !== String(editingId.value),
   );
   return dup
     ? `Duplicate: ${form.value.equipmentId} already has ${form.value.classification} on this date.`
@@ -1060,7 +1064,9 @@ const isFormValid = computed(
 function submitForm() {
   if (!isFormValid.value) return;
   if (editMode.value && editingId.value) {
-    const idx = events.value.findIndex((e) => e.id === editingId.value);
+    const idx = events.value.findIndex(
+      (e: any) => String(e.id) === String(editingId.value),
+    );
     if (idx >= 0)
       events.value[idx] = {
         ...events.value[idx],

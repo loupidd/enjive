@@ -695,6 +695,15 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useI18n } from "@/i18n";
 
 const { t } = useI18n();
+const EQ_TYPES = [
+  "AC Fasilitas",
+  "Genset",
+  "Panel Listrik",
+  "CCTV",
+  "Fire Alarm",
+  "Pompa Air",
+  "Lift / Elevator",
+];
 
 import { BarChart2, LineChart, PieChart } from "lucide-vue-next";
 import { useReports } from "@/composables/useReports";
@@ -995,13 +1004,19 @@ function barPct(val: number) {
 // ── Health data ───────────────────────────────────────────────
 // Equipment health from API — placeholder until real health tracking is added
 const healthData = computed(() => {
-  const r = apiReports.value;
+  const r = apiReports.value as any;
   if (!r) return [];
   return [
     {
       label: "Operational",
-      count: r.kpi?.equipmentAvailability ?? 0,
-      pct: r.kpi?.equipmentAvailability ?? 0,
+      count:
+        (r as any)?.kpi?.equipmentAvailability ??
+        r?.workOrdersByStatus?.[0]?.count ??
+        0,
+      pct:
+        (r as any)?.kpi?.equipmentAvailability ??
+        r?.workOrdersByStatus?.[0]?.count ??
+        0,
       dot: "bg-green-400",
       barColor: "bg-green-500/60",
       textColor: "text-green-400",
