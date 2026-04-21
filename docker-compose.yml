@@ -33,6 +33,7 @@ services:
       - .env
     environment:
       DB_HOST: mysql
+      UPLOADS_DIR: /app/uploads
     depends_on:
       mysql:
         condition: service_healthy
