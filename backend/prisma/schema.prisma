@@ -314,6 +314,30 @@ model WorkReport {
   @@map("work_reports")
 }
 
+
+model ActivityTemplate {
+  id             String  @id @default(uuid())
+  equipmentType  String
+  classification String
+  interval       String
+  name           String
+  type           String
+  answerType     String  @default("Qualitative")
+  unit           String? @default("")
+  optimum        String? @default("")
+  min            String? @default("")
+  max            String? @default("")
+  sort           Int     @default(1)
+  status         String  @default("Enable")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("activity_templates")
+  @@index([equipmentType])
+  @@index([equipmentType, classification, interval])
+}
+
 model ActivityLog {
   id          String       @id @default(uuid())
   type        ActivityType

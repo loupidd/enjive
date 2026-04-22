@@ -18,6 +18,7 @@ import { workordersRoutes } from "./routes/workorders.routes.js";
 import { troubleRoutes } from "./routes/trouble.routes.js";
 import { scheduleRoutes } from "./routes/schedule.routes.js";
 import { activitiesRoutes } from "./routes/activities.routes.js";
+import { activityTemplateRoutes } from "./routes/activity-template.routes.js";
 import { reportsRoutes } from "./routes/reports.routes.js";
 import { dashboardRoutes } from "./routes/dashboard.routes.js";
 import { importRoutes } from "./routes/import.routes.js";
@@ -92,6 +93,9 @@ async function bootstrap() {
   });
   await fastify.register(troubleRoutes, { prefix: `${API_PREFIX}/trouble` });
   await fastify.register(scheduleRoutes, { prefix: `${API_PREFIX}/schedule` });
+  await fastify.register(activityTemplateRoutes, {
+    prefix: "/api/v1/activity-templates",
+  });
   await fastify.register(activitiesRoutes, {
     prefix: `${API_PREFIX}/activities`,
   });
