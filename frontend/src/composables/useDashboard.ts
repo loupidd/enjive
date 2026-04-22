@@ -17,6 +17,9 @@ export interface DashboardData {
   kpi: DashboardKpi;
   recentWorkOrders: WorkOrder[];
   recentTrouble: TroubleReport[];
+  byType?: Record<string, number>;
+  byStatus?: Record<string, number>;
+  byMonth?: { month: string; count: number }[];
 }
 
 export function useDashboard() {

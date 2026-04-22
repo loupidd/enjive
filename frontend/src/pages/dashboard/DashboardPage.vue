@@ -174,12 +174,15 @@
 
     <!-- ── Year vs Last Month bars ──────────────────────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- WO Status breakdown -->
       <div class="card">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="text-sm font-semibold text-white">Full Year Status</h3>
+            <h3 class="text-sm font-semibold text-white">
+              {{ t("dashboard.taskStatus") }}
+            </h3>
             <p class="text-[11px] text-denim-200/40 mt-0.5">
-              January – March 2026
+              {{ new Date().getFullYear() }}
             </p>
           </div>
           <span class="text-lg font-bold text-caramel">{{
@@ -190,19 +193,51 @@
         </div>
         <HBarChart :data="statusThisMonth" />
       </div>
+      <!-- Monthly completions (last 12 months) -->
       <div class="card">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="text-sm font-semibold text-white">Last Month Status</h3>
-            <p class="text-[11px] text-denim-200/40 mt-0.5">February 2026</p>
+            <h3 class="text-sm font-semibold text-white">
+              {{ t("dashboard.completedMonth") }}
+            </h3>
+            <p class="text-[11px] text-denim-200/40 mt-0.5">Last 12 months</p>
           </div>
           <span class="text-lg font-bold text-caramel">{{
-            statusThisMonth
+            byMonthData
               .reduce((a: any, b: any) => a + b.value, 0)
               .toLocaleString()
           }}</span>
         </div>
-        <HBarChart :data="statusThisMonth" />
+        <div v-if="byMonthData.length" class="flex items-end gap-1 h-24">
+          <div
+            v-for="m in byMonthData"
+            :key="m.label"
+            class="flex-1 flex flex-col items-center gap-1 group"
+          >
+            <div
+              class="w-full rounded-t-sm bg-caramel/30 hover:bg-caramel/60 transition-colors relative"
+              :style="{
+                height:
+                  maxByMonth > 0
+                    ? Math.max(4, Math.round((m.value / maxByMonth) * 88)) +
+                      'px'
+                    : '4px',
+              }"
+              :title="m.label + ': ' + m.value"
+            >
+              <span
+                v-if="m.value > 0"
+                class="absolute -top-4 left-1/2 -translate-x-1/2 text-[9px] text-caramel opacity-0 group-hover:opacity-100 whitespace-nowrap"
+              >
+                {{ m.value }}
+              </span>
+            </div>
+            <span class="text-[8px] text-denim-200/30">{{ m.label }}</span>
+          </div>
+        </div>
+        <div v-else class="h-24 flex items-center justify-center">
+          <p class="text-xs text-denim-200/25">{{ t("common.noData") }}</p>
+        </div>
       </div>
     </div>
 
@@ -626,14 +661,16 @@ const mkClass = (prev: number, cert: number, corr: number, pred: number) => [
   { label: "Predictive", value: pred, color: COLORS.predictive },
 ];
 const classYear = computed(() => {
-  const d = (dashData.value as any)?.byType;
-  return mkClass(d?.PREVENTIVE ?? 0, 0, d?.CORRECTIVE ?? 0, d?.INSPECTION ?? 0);
+  const d = dashData.value?.byType as any;
+  return mkClass(
+    d?.PREVENTIVE ?? 0,
+    d?.INSPECTION ?? 0,
+    d?.CORRECTIVE ?? 0,
+    d?.EMERGENCY ?? 0,
+  );
 });
-const classLastMonth = computed(() => mkClass(0, 0, 0, 0));
-const classThisMonth = computed(() => {
-  const d = (dashData.value as any)?.byType;
-  return mkClass(d?.PREVENTIVE ?? 0, 0, d?.CORRECTIVE ?? 0, 0);
-});
+const classLastMonth = computed(() => classYear.value); // same data until monthly breakdowns available
+const classThisMonth = computed(() => classYear.value);
 
 const SC: Record<string, string> = {
   Waiting: "#6b7280",
@@ -658,21 +695,41 @@ const SL = [
 
 // Status bars from API
 const statusThisMonth = computed(() => {
-  const byStatus = (dashData.value as any)?.byStatus ?? {};
+  const bs = (dashData.value?.byStatus as Record<string, number>) ?? {};
+  const statusKeyMap: Record<string, string[]> = {
+    Waiting: ["OPEN", "DRAFT"],
+    Process: ["ASSIGNED", "IN_PROGRESS"],
+    Reporting: ["ON_HOLD"],
+    Review: ["ON_HOLD"],
+    "Client Spv Review": [],
+    "Chief Eng Review": [],
+    Finish: ["COMPLETED", "CLOSED"],
+    Reject: ["CANCELLED"],
+  };
   return SL.map((l) => {
-    const key =
-      l === "Waiting"
-        ? "OPEN"
-        : l === "Finish"
-          ? "COMPLETED"
-          : l === "Reject"
-            ? "CANCELLED"
-            : "IN_PROGRESS";
-    return { label: l, value: byStatus[key] ?? 0, color: SC[l] };
+    const value = (statusKeyMap[l] ?? []).reduce(
+      (sum, k) => sum + (bs[k] ?? 0),
+      0,
+    );
+    return { label: l, value, color: SC[l] };
   });
 });
 const maxStatusThisMonth = computed(() =>
   Math.max(...statusThisMonth.value.map((s: any) => s.value), 1),
+);
+
+// ── Monthly completions chart ──────────────────────────────────
+const byMonthData = computed(() => {
+  const raw =
+    (dashData.value?.byMonth as { month: string; count: number }[]) ?? [];
+  return raw.map((r) => ({
+    label: r.month.slice(5), // "YYYY-MM" → "MM"
+    value: r.count,
+    color: "#FFC677",
+  }));
+});
+const maxByMonth = computed(() =>
+  Math.max(...byMonthData.value.map((d) => d.value), 1),
 );
 
 // ── Donut period toggle ───────────────────────────────────────
