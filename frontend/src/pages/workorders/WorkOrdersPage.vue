@@ -11,7 +11,7 @@
     </div>
 
     <!-- ── Pipeline visual (status flow) ───────────────────── -->
-    <div class="card p-3 overflow-x-auto">
+    <div class="card p-3 overflow-x-auto scrollbar-thin">
       <div class="flex items-center gap-0 min-w-max">
         <template v-for="(stage, i) in PIPELINE" :key="stage.key">
           <button
@@ -163,7 +163,7 @@
     <!-- ── Task Table ───────────────────────────────────────── -->
     <div class="card p-0 overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-sm min-w-[1100px]">
+        <table class="w-full text-sm min-w-[640px]">
           <thead>
             <tr class="border-b border-denim-700/40 bg-denim-900/40">
               <th
@@ -177,7 +177,7 @@
                 Equipment
               </th>
               <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
+                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide hidden sm:table-cell"
               >
                 Trouble ID
               </th>
@@ -187,7 +187,7 @@
                 Type
               </th>
               <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
+                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide hidden md:table-cell"
               >
                 Interval
               </th>
@@ -197,12 +197,12 @@
                 Start
               </th>
               <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
+                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide hidden md:table-cell"
               >
                 Duration
               </th>
               <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
+                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide hidden lg:table-cell"
               >
                 Technician
               </th>
@@ -249,7 +249,7 @@
               </td>
 
               <!-- Trouble ID -->
-              <td class="px-3 py-2.5">
+              <td class="px-3 py-2.5 hidden sm:table-cell">
                 <span
                   v-if="task.troubleId"
                   class="font-mono text-[11px] text-orange-400 bg-orange-400/10 px-1.5 py-0.5 rounded"
@@ -269,7 +269,9 @@
               </td>
 
               <!-- Interval -->
-              <td class="px-3 py-2.5 text-xs text-denim-100/60">
+              <td
+                class="px-3 py-2.5 text-xs text-denim-100/60 hidden md:table-cell"
+              >
                 {{ task.interval }}
               </td>
 
@@ -279,7 +281,7 @@
               </td>
 
               <!-- Duration -->
-              <td class="px-3 py-2.5">
+              <td class="px-3 py-2.5 hidden md:table-cell">
                 <span
                   v-if="task.status === 'Finish'"
                   class="text-xs text-green-400 font-medium"
@@ -291,7 +293,7 @@
               </td>
 
               <!-- Technician -->
-              <td class="px-3 py-2.5">
+              <td class="px-3 py-2.5 hidden lg:table-cell">
                 <div class="flex items-center gap-1.5">
                   <div
                     class="w-5 h-5 rounded-full bg-denim-600 flex items-center justify-center text-[9px] font-bold text-denim-200 shrink-0"
@@ -673,7 +675,6 @@ const {
 onMounted(() => fetchWOs());
 
 const _auth = useAuthStore();
-const currentRole = computed(() => _auth.user?.role || "");
 
 const { subscribe } = useSSE();
 subscribe("wo:status", () => fetchWOs());
@@ -1042,7 +1043,7 @@ function typeColor(type: string) {
 // ── ACK logic (role-based) ────────────────────────────────────
 function canAck(task: any) {
   if (task.status === "Finish" || task.status === "Reject") return false;
-  const role = currentRole.value;
+  const role = _auth.user?.role;
   // Full 6-step pipeline role mapping
   if (role === "TECHNICIAN") {
     return task.status === "Waiting" || task.status === "Process";
@@ -1062,14 +1063,14 @@ function canAck(task: any) {
 }
 function canEdit(task: any) {
   if (task.status === "Finish" || task.status === "Reject") return false;
-  if (currentRole.value === "TECHNICIAN" && task.status === "Waiting")
+  if (_auth.user?.role === "TECHNICIAN" && task.status === "Waiting")
     return true;
   if (
-    currentRole.value === "MANAGER" &&
+    _auth.user?.role === "MANAGER" &&
     ["Waiting", "Process", "Reporting"].includes(task.status)
   )
     return true;
-  if (currentRole.value === "ADMIN") return true;
+  if (_auth.user?.role === "ADMIN") return true;
   return false;
 }
 function ackLabel(task: any) {
