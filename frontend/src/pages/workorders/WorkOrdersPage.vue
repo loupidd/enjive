@@ -673,6 +673,7 @@ const {
 onMounted(() => fetchWOs());
 
 const _auth = useAuthStore();
+const currentRole = computed(() => _auth.user?.role || "");
 
 const { subscribe } = useSSE();
 subscribe("wo:status", () => fetchWOs());
@@ -1041,15 +1042,22 @@ function typeColor(type: string) {
 // ── ACK logic (role-based) ────────────────────────────────────
 function canAck(task: any) {
   if (task.status === "Finish" || task.status === "Reject") return false;
-  if (currentRole.value === "TECHNICIAN" && task.status === "Waiting")
-    return true;
-  if (currentRole.value === "MANAGER" && task.status === "Reporting")
-    return true;
-  if (currentRole.value === "MANAGER" && task.status === "Review") return true;
-  if (currentRole.value === "MANAGER" && task.status === "Chief Eng Review")
-    return true;
-  if (currentRole.value === "ADMIN")
+  const role = currentRole.value;
+  // Full 6-step pipeline role mapping
+  if (role === "TECHNICIAN") {
+    return task.status === "Waiting" || task.status === "Process";
+  }
+  if (role === "MANAGER") {
+    return [
+      "Reporting",
+      "Review",
+      "Client Spv Review",
+      "Chief Eng Review",
+    ].includes(task.status);
+  }
+  if (role === "ADMIN" || role === "SUPER_ADMIN") {
     return !["Finish", "Reject"].includes(task.status);
+  }
   return false;
 }
 function canEdit(task: any) {
@@ -1065,20 +1073,29 @@ function canEdit(task: any) {
   return false;
 }
 function ackLabel(task: any) {
-  if (task.status === "Waiting") return "Approve";
-  if (task.status === "Reporting") return "Review";
-  if (task.status === "Review") return "Approve";
-  if (task.status === "Chief Eng Review") return "Finalize";
-  return "ACK";
+  const labels: Record<string, string> = {
+    Waiting: "Start Work",
+    Process: "Submit Report",
+    Reporting: "Lead Tech Review",
+    Review: "SPV Approve",
+    "Client Spv Review": "Chief SPV Approve",
+    "Chief Eng Review": "Final Approve",
+  };
+  return labels[task.status] ?? "ACK";
 }
 function ackStyle(task: any) {
-  if (task.status === "Waiting")
+  const s = task.status;
+  if (s === "Waiting")
     return "bg-caramel text-denim-950 hover:bg-caramel/80 shadow-md shadow-caramel/20";
-  if (task.status === "Reporting")
+  if (s === "Process")
+    return "bg-yellow-400/20 text-yellow-300 hover:bg-yellow-400/30 border border-yellow-400/30";
+  if (s === "Reporting")
     return "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30";
-  if (task.status === "Review")
+  if (s === "Review")
     return "bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/30";
-  if (task.status === "Chief Eng Review")
+  if (s === "Client Spv Review")
+    return "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 border border-cyan-500/30";
+  if (s === "Chief Eng Review")
     return "bg-green-500/20 text-green-300 hover:bg-green-500/30 border border-green-500/30";
   return "bg-denim-600/50 text-denim-200 hover:bg-denim-600";
 }
@@ -1095,8 +1112,10 @@ const ackModalTitle = computed(() => {
   if (!ackTask.value) return "";
   const titles: Record<string, string> = {
     Waiting: "Approve & Start Task",
+    Process: "Submit Technician Report",
     Reporting: "Lead Tech Review",
     Review: "Client SPV Approval",
+    "Client Spv Review": "Chief SPV Approval",
     "Chief Eng Review": "Chief Engineer Finalization",
   };
   return titles[ackTask.value.status] ?? "Acknowledge Task";
@@ -1110,13 +1129,15 @@ function openAck(task: any) {
 
 async function approveTask() {
   if (!ackTask.value) return;
+  // Map display pipeline step → API status that backend accepts
+  // The backend WorkOrderStatus enum is the source of truth
   const nextApiStatus: Record<string, string> = {
-    Waiting: "IN_PROGRESS",
-    Process: "IN_PROGRESS",
-    Reporting: "COMPLETED",
-    Review: "COMPLETED",
-    "Client Spv Review": "CLOSED",
-    "Chief Eng Review": "CLOSED",
+    Waiting: "ASSIGNED", // tech accepts → assigned
+    Process: "IN_PROGRESS", // tech submits report → in progress flagged
+    Reporting: "ON_HOLD", // lead reviews → on hold pending spv
+    Review: "ON_HOLD", // spv approves → on hold pending chief
+    "Client Spv Review": "ON_HOLD", // chief spv approves → on hold pending chief eng
+    "Chief Eng Review": "COMPLETED", // chief eng finalizes → completed
   };
   const next = nextApiStatus[ackTask.value.status];
   if (next) {
