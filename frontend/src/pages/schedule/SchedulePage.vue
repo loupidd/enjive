@@ -210,7 +210,7 @@
                     :key="e.id"
                     :value="e.id"
                   >
-                    {{ e.id }} – {{ e.name }}
+                    {{ e.code }} – {{ e.name }}
                   </option>
                 </select>
               </div>
@@ -638,6 +638,8 @@ import { useI18n } from "@/i18n";
 const { t } = useI18n();
 
 import { useSchedule } from "@/composables/useSchedule";
+import { useEquipment } from "@/composables/useEquipment";
+import { useUsers } from "@/composables/useUsers";
 
 const {
   items: schedItems,
@@ -848,13 +850,13 @@ const actTypeToClass: Record<string, string> = {
   LUBRICATION: "Preventive",
   TESTING: "Predictive",
 };
+import { watchEffect } from "vue";
+
 const events = ref<any[]>([]);
 
-onMounted(async () => {
-  await fetchSchedules();
-
+watchEffect(() => {
   events.value = schedItems.value.map((s) => ({
-    id: s.id,
+    id: String(s.id),
     equipmentId: s.equipmentId,
     equipmentType: (s as any).equipment?.name ?? "—",
     classification:
@@ -1090,23 +1092,43 @@ function submitForm() {
   showModal.value = false;
 }
 
+const { items: allEqItems, fetch: fetchEquipment } = useEquipment();
+
+onMounted(() => {
+  fetchEquipment();
+});
+
+const { items: userItems, fetch: fetchUsers } = useUsers();
+
+onMounted(() => {
+  fetchUsers();
+});
+
 // Static data
+// Equipment types from full equipment list
 const equipmentTypes = computed(() => {
   const cats = new Set(
-    schedItems.value.map((s: any) => s.equipment?.category).filter(Boolean),
+    allEqItems.value.map((e: any) => e.category).filter(Boolean),
   );
   return Array.from(cats).sort() as string[];
 });
-const equipmentMap: Record<string, { id: string; name: string }[]> = {};
-const filteredEquipment = computed(
-  () => equipmentMap[form.value.equipmentType] ?? [],
+
+// Equipment filtered by selected type
+const filteredEquipment = computed(() => {
+  if (!form.value.equipmentType) return [];
+  return allEqItems.value
+    .filter((e: any) => e.category === form.value.equipmentType)
+    .map((e: any) => ({ id: e.id, code: e.code, name: e.name }));
+});
+
+// Technicians from users API
+const technicians = computed(() =>
+  userItems.value.map((u: any) => ({
+    id: u.id,
+    name: `${u.firstName} ${u.lastName}`,
+  })),
 );
-const technicians = [
-  { id: "ahmad", name: "Ahmad Fauzi" },
-  { id: "budi", name: "Budi Santoso" },
-  { id: "citra", name: "Citra Dewi" },
-  { id: "dodi", name: "Dodi Prasetyo" },
-];
+// technicians derived from useUsers above
 </script>
 
 <style scoped>
