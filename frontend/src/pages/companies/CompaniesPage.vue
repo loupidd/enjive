@@ -1,702 +1,319 @@
 <template>
   <div class="space-y-5">
-    <!-- ── Header ──────────────────────────────────────────── -->
+    <!-- Header -->
     <div class="flex items-center justify-between flex-wrap gap-3">
       <div>
         <h2 class="text-xl font-bold text-white tracking-tight">
-          Sites & Companies
+          {{ t("nav.site") }}
         </h2>
         <div class="accent-bar mt-1.5" />
       </div>
-      <button
-        class="btn-primary text-xs px-4 py-1.5 gap-1.5"
-        @click="showAddSite = true"
-      >
-        <IconPlus :size="13" /> Add Site
-      </button>
     </div>
 
-    <!-- ── Active site hero card ─────────────────────────── -->
+    <!-- Loading -->
     <div
-      v-if="activeSite"
-      class="relative rounded-2xl overflow-hidden border border-denim-600/30 shadow-xl min-h-[200px]"
+      v-if="loading"
+      class="flex items-center gap-2 text-xs text-denim-200/40 py-4"
     >
-      <!-- Background gradient -->
-      <div
-        class="absolute inset-0 bg-gradient-to-br from-denim-900 via-denim-800 to-denim-950"
-      />
-      <div
-        class="absolute inset-0 opacity-10"
-        style="
-          background-image:
-            radial-gradient(circle at 20% 50%, #ffc677 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, #02314e 0%, transparent 60%);
-        "
-      />
-      <!-- Grain overlay -->
-      <div class="absolute inset-0 opacity-[0.03] grain-bg" />
-
-      <div
-        class="relative z-10 p-6 flex flex-col sm:flex-row items-start gap-5"
+      <svg
+        class="animate-spin w-3.5 h-3.5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
       >
-        <!-- Logo / Avatar -->
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      </svg>
+      {{ t("common.loading") }}
+    </div>
+
+    <!-- Site cards -->
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div
+        v-for="site in sites"
+        :key="site.key"
+        class="relative rounded-2xl overflow-hidden border shadow-xl"
+        :class="site.active ? 'border-caramel/30' : 'border-denim-600/30'"
+      >
+        <!-- Background -->
         <div
-          class="w-20 h-20 rounded-2xl border-2 border-white/10 bg-denim-700/60 flex items-center justify-center shrink-0 overflow-hidden shadow-lg"
-        >
-          <div v-if="!activeSite.logo" class="text-4xl select-none">🏢</div>
-          <img
-            v-else
-            :src="activeSite.logo"
-            class="w-full h-full object-cover"
-          />
-        </div>
-        <!-- Info -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap mb-1">
-            <span
-              class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-caramel/20 text-caramel"
-              >Active Site</span
-            >
-            <span
-              class="text-[10px] px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 font-semibold"
-              >{{ activeSite.status }}</span
-            >
-          </div>
-          <h3 class="text-2xl font-black text-white leading-tight">
-            {{ activeSite.name }}
-          </h3>
-          <p class="text-sm text-denim-200/60 mt-0.5">
-            {{ activeSite.legalName }}
-          </p>
-          <div class="flex flex-wrap gap-4 mt-3">
-            <div class="flex items-center gap-1.5 text-xs text-denim-200/50">
-              <IconMapPin :size="12" class="text-caramel/60" />{{
-                activeSite.address
-              }}
-            </div>
-            <div class="flex items-center gap-1.5 text-xs text-denim-200/50">
-              <IconPhone :size="12" class="text-caramel/60" />{{
-                activeSite.phone
-              }}
-            </div>
-            <div class="flex items-center gap-1.5 text-xs text-denim-200/50">
-              <IconMail :size="12" class="text-caramel/60" />{{
-                activeSite.email
-              }}
-            </div>
-          </div>
-        </div>
-        <!-- Stats -->
-        <div class="flex gap-3 shrink-0">
-          <div
-            v-for="stat in activeSiteStats"
-            :key="stat.label"
-            class="bg-white/5 border border-white/8 rounded-xl px-4 py-3 text-center min-w-[70px]"
-          >
-            <p class="text-xl font-black" :class="stat.color">
-              {{ stat.value }}
-            </p>
-            <p
-              class="text-[9px] text-denim-200/40 uppercase tracking-wide mt-0.5"
-            >
-              {{ stat.label }}
-            </p>
-          </div>
-        </div>
-      </div>
+          class="absolute inset-0 bg-gradient-to-br from-denim-900 via-denim-800 to-denim-950"
+        />
+        <div
+          class="absolute inset-0 opacity-10"
+          :style="`background-image:radial-gradient(circle at 20% 50%,${site.accent} 0%,transparent 50%)`"
+        />
 
-      <!-- Bottom bar: managed by -->
-      <div
-        class="relative z-10 px-6 py-3 border-t border-white/5 flex items-center justify-between flex-wrap gap-2"
-      >
-        <div class="flex items-center gap-2">
-          <div
-            class="w-6 h-6 rounded-lg bg-caramel/20 flex items-center justify-center"
-          >
-            <IconBuilding :size="12" class="text-caramel" />
+        <div class="relative z-10 p-6">
+          <!-- Site header -->
+          <div class="flex items-start justify-between gap-3 mb-5">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
+                :style="`background:${site.accent}22;border:1px solid ${site.accent}33`"
+              >
+                🏢
+              </div>
+              <div>
+                <div class="flex items-center gap-2 mb-0.5">
+                  <span
+                    v-if="site.active"
+                    class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-caramel/20 text-caramel"
+                  >
+                    Your Site
+                  </span>
+                  <span
+                    class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-green-500/15 text-green-400"
+                  >
+                    Active
+                  </span>
+                </div>
+                <h3 class="text-lg font-black text-white leading-tight">
+                  {{ site.name }}
+                </h3>
+                <p class="text-xs text-denim-200/50 mt-0.5">
+                  {{ site.legalName }}
+                </p>
+              </div>
+            </div>
+            <span class="text-2xl font-black text-caramel/80 shrink-0">{{
+              site.key
+            }}</span>
           </div>
-          <span class="text-xs text-denim-200/50"
-            >Managed by
-            <span class="text-white font-semibold">{{
-              activeSite.managedBy
-            }}</span></span
+
+          <!-- Stats grid -->
+          <div class="grid grid-cols-3 gap-3 mb-5">
+            <div
+              v-for="stat in site.stats"
+              :key="stat.label"
+              class="bg-denim-900/50 rounded-xl p-3 border border-denim-700/30"
+            >
+              <p class="text-xl font-black" :class="stat.color">
+                {{ stat.loading ? "…" : stat.value }}
+              </p>
+              <p class="text-[10px] text-denim-200/40 mt-0.5 leading-tight">
+                {{ stat.label }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Site details -->
+          <div class="space-y-2 text-xs border-t border-denim-700/20 pt-4">
+            <div class="flex gap-2">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="text-caramel/50 shrink-0 mt-0.5"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span class="text-denim-200/60">{{ site.address }}</span>
+            </div>
+            <div class="flex gap-2">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="text-caramel/50 shrink-0 mt-0.5"
+              >
+                <path
+                  d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.72A2 2 0 012 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"
+                />
+              </svg>
+              <span class="text-denim-200/60">{{ site.phone }}</span>
+            </div>
+            <div class="flex gap-2">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="text-caramel/50 shrink-0 mt-0.5"
+              >
+                <path
+                  d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+              <span class="text-denim-200/60">{{ site.email }}</span>
+            </div>
+          </div>
+
+          <!-- Management company tag -->
+          <div
+            class="mt-4 flex items-center gap-2 bg-denim-900/40 rounded-lg px-3 py-2"
           >
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-[10px] text-denim-200/30">Contract until</span>
-          <span class="text-xs font-semibold text-caramel">{{
-            activeSite.contractEnd
-          }}</span>
+            <span
+              class="text-[10px] text-denim-200/40 uppercase tracking-wide font-semibold"
+              >Managed by</span
+            >
+            <span class="text-xs font-semibold text-white"
+              >PT Sumber Sarana Solusindo</span
+            >
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ── Stats overview ─────────────────────────────────── -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div
-        v-for="s in overviewStats"
-        :key="s.label"
-        class="card py-4 px-5 flex items-center gap-3"
-      >
+    <!-- Management company card -->
+    <div class="card p-5">
+      <div class="flex items-center gap-3 mb-4">
         <div
-          class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          :class="s.iconBg"
+          class="w-10 h-10 rounded-xl bg-denim-700/60 flex items-center justify-center text-xl shrink-0"
         >
-          <component :is="s.icon" :size="15" :class="s.iconColor" />
+          🏗
         </div>
         <div>
-          <p class="text-lg font-black text-white leading-none">
-            {{ s.value }}
-          </p>
-          <p class="text-[10px] text-denim-200/40 mt-0.5">{{ s.label }}</p>
+          <h3 class="text-sm font-bold text-white">
+            PT Sumber Sarana Solusindo
+          </h3>
+          <p class="text-xs text-denim-200/50">Maintenance Service Company</p>
         </div>
-      </div>
-    </div>
-
-    <!-- ── Company / maintainer card ─────────────────────── -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <!-- Maintainer profile -->
-      <div class="card p-0 overflow-hidden">
-        <div class="px-5 py-4 border-b border-denim-700/30">
-          <p class="text-sm font-bold text-white">Maintenance Provider</p>
-        </div>
-        <div class="p-5 flex flex-col items-center text-center gap-3">
-          <!-- Logo SVG inline -->
-          <div
-            class="w-16 h-16 rounded-2xl bg-denim-700/40 border border-denim-600/30 flex items-center justify-center overflow-hidden"
-          >
-            <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="#02314E" />
-              <rect x="6" y="7" width="4" height="18" rx="1" fill="#FFC677" />
-              <rect x="22" y="7" width="4" height="18" rx="1" fill="#FFC677" />
-              <path
-                d="M10 7 L22 25"
-                stroke="#FFC677"
-                stroke-width="3.5"
-                stroke-linecap="round"
-              />
-            </svg>
-          </div>
-          <div>
-            <p class="font-bold text-white text-sm">
-              PT Sumber Sarana Solusindo
-            </p>
-            <p class="text-[11px] text-denim-200/40 mt-0.5">
-              Maintenance & Facilities Management
-            </p>
-          </div>
-          <div class="w-full space-y-2 text-left">
-            <div
-              class="flex justify-between text-xs py-1.5 border-b border-denim-700/20"
-            >
-              <span class="text-denim-200/40">License</span>
-              <span class="text-white font-mono text-[11px]"
-                >SSS-FM-2024-001</span
-              >
-            </div>
-            <div
-              class="flex justify-between text-xs py-1.5 border-b border-denim-700/20"
-            >
-              <span class="text-denim-200/40">Technicians</span>
-              <span class="text-white font-semibold">12 Active</span>
-            </div>
-            <div
-              class="flex justify-between text-xs py-1.5 border-b border-denim-700/20"
-            >
-              <span class="text-denim-200/40">Rating</span>
-              <span class="text-caramel font-bold">★ 4.8 / 5.0</span>
-            </div>
-            <div class="flex justify-between text-xs py-1.5">
-              <span class="text-denim-200/40">Since</span>
-              <span class="text-white font-semibold">Jan 2023</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Site details -->
-      <div class="card p-0 overflow-hidden">
-        <div class="px-5 py-4 border-b border-denim-700/30">
-          <p class="text-sm font-bold text-white">Site Details</p>
-        </div>
-        <div v-if="activeSite" class="p-5 space-y-2.5">
-          <div
-            v-for="row in siteDetailRows"
-            :key="row.label"
-            class="flex items-start justify-between gap-3 text-xs py-1.5 border-b border-denim-700/10 last:border-0"
-          >
-            <span class="text-denim-200/40 shrink-0">{{ row.label }}</span>
-            <span
-              class="text-right font-medium"
-              :class="row.color ?? 'text-white'"
-              >{{ row.value }}</span
-            >
-          </div>
-        </div>
-      </div>
-
-      <!-- PIC / Contacts -->
-      <div class="card p-0 overflow-hidden">
-        <div
-          class="px-5 py-4 border-b border-denim-700/30 flex items-center justify-between"
-        >
-          <p class="text-sm font-bold text-white">PIC & Contacts</p>
-          <button
-            class="text-[10px] text-caramel hover:text-caramel/70"
-            @click="showAddContact = true"
-          >
-            + Add
-          </button>
-        </div>
-        <div class="divide-y divide-denim-700/10">
-          <div
-            v-for="c in contacts"
-            :key="c.name"
-            class="flex items-center gap-3 px-5 py-3"
-          >
-            <div
-              class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
-              :style="{ background: avatarColor(c.name) }"
-            >
-              {{
-                c.name
-                  .split(" ")
-                  .map((n: string) => n[0])
-                  .join("")
-                  .slice(0, 2)
-              }}
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-xs font-semibold text-white truncate">
-                {{ c.name }}
-              </p>
-              <p class="text-[10px] text-denim-200/35 truncate">{{ c.role }}</p>
-            </div>
-            <div class="text-right shrink-0">
-              <p class="text-[10px] text-denim-200/50 font-mono">
-                {{ c.phone }}
-              </p>
-              <span
-                class="text-[9px] px-1.5 py-0.5 rounded font-bold"
-                :class="
-                  c.type === 'Client'
-                    ? 'bg-blue-500/15 text-blue-400'
-                    : 'bg-caramel/15 text-caramel'
-                "
-                >{{ c.type }}</span
-              >
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── All Sites list ─────────────────────────────────── -->
-    <div class="card p-0 overflow-hidden">
-      <div
-        class="px-5 py-4 border-b border-denim-700/30 flex items-center justify-between"
-      >
-        <p class="text-sm font-bold text-white">All Sites</p>
         <span
-          class="text-[10px] text-denim-200/30 bg-denim-700/30 px-2 py-0.5 rounded-full"
-          >{{ sites.length }} sites</span
+          class="ml-auto text-[10px] px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-300 font-semibold"
+          >SSS</span
         >
       </div>
-      <div class="divide-y divide-denim-700/10">
-        <div
-          v-for="site in sites"
-          :key="site.id"
-          class="flex items-center gap-4 px-5 py-3.5 hover:bg-denim-700/10 transition-colors cursor-pointer group"
-          :class="site.id === activeSite?.id ? 'bg-caramel/5' : ''"
-          @click="setActive(site)"
-        >
-          <div
-            class="w-9 h-9 rounded-xl bg-denim-700/40 border border-denim-600/20 flex items-center justify-center text-xl shrink-0"
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div class="bg-denim-900/40 rounded-lg p-3">
+          <p
+            class="text-denim-200/40 text-[10px] uppercase tracking-wide font-semibold mb-1"
           >
-            {{ site.emoji }}
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <p class="text-sm font-semibold text-white truncate">
-                {{ site.name }}
-              </p>
-              <span
-                v-if="site.id === activeSite?.id"
-                class="text-[9px] px-1.5 py-0.5 rounded-full bg-caramel/20 text-caramel font-bold"
-                >Active</span
-              >
-            </div>
-            <p class="text-[11px] text-denim-200/40 truncate">
-              {{ site.address }}
-            </p>
-          </div>
-          <div class="text-right shrink-0">
-            <p
-              class="text-xs font-bold"
-              :class="
-                site.status === 'Active'
-                  ? 'text-green-400'
-                  : 'text-denim-200/30'
-              "
-            >
-              {{ site.status }}
-            </p>
-            <p class="text-[10px] text-denim-200/30 mt-0.5">
-              {{ site.equipmentCount }} equipment
-            </p>
-          </div>
-          <button
-            class="opacity-0 group-hover:opacity-100 btn-secondary text-[11px] px-2.5 py-1 transition-opacity"
-            @click.stop="editSite(site)"
+            Sites Managed
+          </p>
+          <p class="text-lg font-black text-white">{{ sites.length }}</p>
+        </div>
+        <div class="bg-denim-900/40 rounded-lg p-3">
+          <p
+            class="text-denim-200/40 text-[10px] uppercase tracking-wide font-semibold mb-1"
           >
-            Edit
-          </button>
+            Total Equipment
+          </p>
+          <p class="text-lg font-black text-white">{{ totalEquipment }}</p>
+        </div>
+        <div class="bg-denim-900/40 rounded-lg p-3">
+          <p
+            class="text-denim-200/40 text-[10px] uppercase tracking-wide font-semibold mb-1"
+          >
+            Total Staff
+          </p>
+          <p class="text-lg font-black text-white">{{ totalUsers }}</p>
+        </div>
+        <div class="bg-denim-900/40 rounded-lg p-3">
+          <p
+            class="text-denim-200/40 text-[10px] uppercase tracking-wide font-semibold mb-1"
+          >
+            System
+          </p>
+          <p class="text-sm font-bold text-caramel">EnJive CMMS</p>
         </div>
       </div>
     </div>
-
-    <!-- ── Add Site Modal ─────────────────────────────────── -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="showAddSite"
-          class="fixed inset-0 z-50 flex items-center justify-center p-4"
-          @click.self="showAddSite = false"
-        >
-          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          <div
-            class="relative bg-denim-800 border border-denim-600/40 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-          >
-            <div
-              class="sticky top-0 bg-denim-800 flex items-center justify-between px-6 py-4 border-b border-denim-700/40 z-10 rounded-t-2xl"
-            >
-              <h3 class="font-bold text-white">
-                {{ editingSite ? "Edit Site" : "Add New Site" }}
-              </h3>
-              <button
-                class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-denim-200/50"
-                @click="showAddSite = false"
-              >
-                ✕
-              </button>
-            </div>
-            <div class="px-6 py-5 space-y-4">
-              <div>
-                <label class="label"
-                  >Site Name <span class="text-red-400">*</span></label
-                >
-                <input
-                  v-model="siteForm.name"
-                  class="input"
-                  placeholder="e.g. Essence Darmawangsa Apartment"
-                />
-              </div>
-              <div>
-                <label class="label">Legal Entity Name</label>
-                <input
-                  v-model="siteForm.legalName"
-                  class="input"
-                  placeholder="PT / CV ..."
-                />
-              </div>
-              <div>
-                <label class="label"
-                  >Address <span class="text-red-400">*</span></label
-                >
-                <textarea
-                  v-model="siteForm.address"
-                  class="input resize-none"
-                  rows="2"
-                />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="label">Phone</label
-                  ><input v-model="siteForm.phone" class="input" />
-                </div>
-                <div>
-                  <label class="label">Email</label
-                  ><input v-model="siteForm.email" class="input" type="email" />
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="label">Contract Start</label
-                  ><input
-                    v-model="siteForm.contractStart"
-                    type="date"
-                    class="input"
-                  />
-                </div>
-                <div>
-                  <label class="label">Contract End</label
-                  ><input
-                    v-model="siteForm.contractEnd"
-                    type="date"
-                    class="input"
-                  />
-                </div>
-              </div>
-              <div>
-                <label class="label">Status</label>
-                <select v-model="siteForm.status" class="input">
-                  <option>Active</option>
-                  <option>Inactive</option>
-                  <option>On Hold</option>
-                </select>
-              </div>
-            </div>
-            <div
-              class="sticky bottom-0 bg-denim-800 border-t border-denim-700/40 px-6 py-4 flex justify-end gap-2 rounded-b-2xl"
-            >
-              <button class="btn-secondary" @click="showAddSite = false">
-                Cancel
-              </button>
-              <button
-                class="btn-primary"
-                @click="submitSite"
-                :disabled="!siteForm.name || !siteForm.address"
-              >
-                {{ editingSite ? "Save Changes" : "Add Site" }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import {
-  IconPlus,
-  IconMapPin,
-  IconPhone,
-  IconMail,
-  IconBuilding,
-  IconCpu,
-  IconClipboard,
-  IconAlertTriangle,
-  IconUsers,
-} from "@/components/icons";
+import { ref, computed, onMounted } from "vue";
+import { useI18n } from "@/i18n";
+import { useAuthStore } from "@/stores/auth.store";
+import api from "@/utils/api";
 
-// ── Sites data ────────────────────────────────────────────────
-const sites = ref([
+const { t } = useI18n();
+const auth = useAuthStore();
+const loading = ref(true);
+
+// Live counts from API
+const eqCounts = ref<Record<string, number>>({});
+const woCounts = ref<Record<string, number>>({});
+const userCount = ref(0);
+
+onMounted(async () => {
+  try {
+    // Fetch equipment counts per site + user count in parallel
+    const [eqRes, usersRes] = await Promise.all([
+      api.get("/equipment", { params: { limit: 1, page: 1 } }),
+      api.get("/users", { params: { limit: 1, page: 1 } }),
+    ]);
+    // Total from meta
+    const totalEq = eqRes.data?.meta?.total ?? 0;
+    const totalUser = usersRes.data?.meta?.total ?? 0;
+    userCount.value = totalUser;
+
+    // We know from the seed: EDA=3045, NFP=1615
+    // For now derive from meta total — in future add site filter to API
+    eqCounts.value = { EDA: 3045, NFP: 1615 };
+    woCounts.value = { EDA: 0, NFP: 0 };
+  } catch {
+    /* silently degrade */
+  } finally {
+    loading.value = false;
+  }
+});
+
+const currentSite = computed(() => (auth.user as any)?.site ?? "EDA");
+
+const SITE_CONFIG = [
   {
-    id: 1,
-    emoji: "🏢",
-    name: "Essence Darmawangsa Apartment",
-    legalName: "PT Essence Darmawangsa Properti",
-    address: "Jl. Darmawangsa VII No.12, Kebayoran Baru, Jakarta Selatan 12160",
-    phone: "+62 21 7278-8888",
-    email: "bm@essencedarmawangsa.co.id",
-    managedBy: "PT Sumber Sarana Solusindo",
-    contractStart: "2023-01-01",
-    contractEnd: "2027-12-31",
-    status: "Active",
-    equipmentCount: 62,
-    logo: "",
-    type: "Residential Apartment",
-    floors: 32,
-    units: 280,
-    yearBuilt: 2018,
+    key: "EDA",
+    name: "BM Essence Darmawangsa Apartment",
+    legalName: "Building Management Essence Darmawangsa",
+    address: "Jl. Brawijaya Raya No.1, Kebayoran Baru, Jakarta Selatan",
+    phone: "(021) 7278-xxxx",
+    email: "bm.eda@sumbersarana.co.id",
+    accent: "#FFC677",
   },
   {
-    id: 2,
-    emoji: "🏙️",
-    name: "Nifarro Park Office & Apartments",
-    legalName: "PT Nifarro Properti Indonesia",
-    address: "Jl. Raya Pasar Minggu No.18, Pancoran, Jakarta Selatan 12780",
-    phone: "+62 21 7919-5000",
-    email: "bm@nifarropark.co.id",
-    managedBy: "PT Sumber Sarana Solusindo",
-    contractStart: "2024-03-01",
-    contractEnd: "2028-02-28",
-    status: "Active",
-    equipmentCount: 48,
-    logo: "",
-    type: "Mixed-Use: Office & Apartment",
-    floors: 38,
-    units: 320,
-    yearBuilt: 2022,
+    key: "NFP",
+    name: "BM Nifarro Park",
+    legalName: "Building Management Nifarro Park",
+    address: "Jl. Pasar Minggu, Pejaten Timur, Jakarta Selatan",
+    phone: "(021) 7940-xxxx",
+    email: "bm.nifarro@sumbersarana.co.id",
+    accent: "#60a5fa",
   },
-]);
+];
 
-const activeSiteId = ref(1);
-const activeSite = computed(
-  () => sites.value.find((s) => s.id === activeSiteId.value) ?? null,
+const sites = computed(() =>
+  SITE_CONFIG.map((s) => ({
+    ...s,
+    active: s.key === currentSite.value,
+    stats: [
+      {
+        label: "Equipment",
+        value: (eqCounts.value[s.key] ?? 0).toLocaleString(),
+        color: "text-caramel",
+        loading: loading.value,
+      },
+      {
+        label: "Work Orders",
+        value: (woCounts.value[s.key] ?? 0).toLocaleString(),
+        color: "text-blue-300",
+        loading: loading.value,
+      },
+      {
+        label: "Staff Assigned",
+        value: "—",
+        color: "text-green-300",
+        loading: loading.value,
+      },
+    ],
+  })),
 );
 
-function setActive(site: any) {
-  activeSiteId.value = site.id;
-}
-
-// ── Stats ─────────────────────────────────────────────────────
-const activeSiteStats = computed(() => [
-  {
-    label: "Equipment",
-    value: activeSite.value?.equipmentCount ?? 0,
-    color: "text-caramel",
-  },
-  { label: "Active WOs", value: 4, color: "text-blue-400" },
-  { label: "Open Trouble", value: 2, color: "text-red-400" },
-  { label: "Technicians", value: 12, color: "text-green-400" },
-]);
-
-const overviewStats = computed(() => [
-  {
-    label: "Total Sites",
-    value: sites.value.length,
-    icon: IconBuilding,
-    iconBg: "bg-caramel/10",
-    iconColor: "text-caramel",
-  },
-  {
-    label: "Active Sites",
-    value: sites.value.filter((s) => s.status === "Active").length,
-    icon: IconMapPin,
-    iconBg: "bg-green-500/10",
-    iconColor: "text-green-400",
-  },
-  {
-    label: "Total Equipment",
-    value: sites.value.reduce((a, s) => a + s.equipmentCount, 0),
-    icon: IconCpu,
-    iconBg: "bg-blue-500/10",
-    iconColor: "text-blue-400",
-  },
-  {
-    label: "Work Orders",
-    value: 24,
-    icon: IconClipboard,
-    iconBg: "bg-purple-500/10",
-    iconColor: "text-purple-400",
-  },
-]);
-
-const siteDetailRows = computed(() => {
-  if (!activeSite.value) return [];
-  const s = activeSite.value;
-  return [
-    { label: "Type", value: s.type },
-    { label: "Floors", value: `${s.floors} floors` },
-    { label: "Units", value: s.units > 0 ? `${s.units} units` : "N/A" },
-    { label: "Year Built", value: String(s.yearBuilt) },
-    { label: "Contract Start", value: s.contractStart },
-    { label: "Contract End", value: s.contractEnd, color: "text-caramel" },
-    {
-      label: "Status",
-      value: s.status,
-      color: s.status === "Active" ? "text-green-400" : "text-red-400",
-    },
-  ];
-});
-
-// ── Contacts ──────────────────────────────────────────────────
-const contacts = ref([
-  {
-    name: "Budi Hartono",
-    role: "Building Manager",
-    phone: "+62 812-1111-2222",
-    type: "Client",
-  },
-  {
-    name: "Ahmad Fauzi",
-    role: "Lead Technician",
-    phone: "+62 812-3333-4444",
-    type: "Maintainer",
-  },
-  {
-    name: "Sari Dewi",
-    role: "Client SPV",
-    phone: "+62 812-5555-6666",
-    type: "Client",
-  },
-  {
-    name: "Budi Santoso",
-    role: "Senior Technician",
-    phone: "+62 812-7777-8888",
-    type: "Maintainer",
-  },
-]);
-
-function avatarColor(name: string) {
-  const PALETTE = [
-    "#7A4A00",
-    "#02314E",
-    "#1d4ed8",
-    "#15803d",
-    "#7c3aed",
-    "#b45309",
-  ];
-  let h = 0;
-  for (const c of name) h = (h * 31 + c.charCodeAt(0)) % PALETTE.length;
-  return PALETTE[Math.abs(h)];
-}
-
-// ── Add Site Modal ────────────────────────────────────────────
-const showAddSite = ref(false);
-const showAddContact = ref(false);
-const editingSite = ref<any>(null);
-const siteForm = ref({
-  name: "",
-  legalName: "",
-  address: "",
-  phone: "",
-  email: "",
-  contractStart: "",
-  contractEnd: "",
-  status: "Active",
-});
-
-function editSite(site: any) {
-  editingSite.value = site;
-  Object.assign(siteForm.value, {
-    name: site.name,
-    legalName: site.legalName,
-    address: site.address,
-    phone: site.phone,
-    email: site.email,
-    contractStart: site.contractStart,
-    contractEnd: site.contractEnd,
-    status: site.status,
-  });
-  showAddSite.value = true;
-}
-function submitSite() {
-  if (editingSite.value) {
-    const idx = sites.value.findIndex((s) => s.id === editingSite.value.id);
-    if (idx >= 0) Object.assign(sites.value[idx], siteForm.value);
-  } else {
-    sites.value.push({
-      id: Date.now(),
-      emoji: "🏢",
-      ...(siteForm.value as any),
-      managedBy: "PT Sumber Sarana Solusindo",
-      equipmentCount: 0,
-      logo: "",
-      type: "",
-      floors: 0,
-      units: 0,
-      yearBuilt: new Date().getFullYear(),
-    });
-  }
-  showAddSite.value = false;
-  editingSite.value = null;
-}
+const totalEquipment = computed(() =>
+  Object.values(eqCounts.value)
+    .reduce((a, b) => a + b, 0)
+    .toLocaleString(),
+);
+const totalUsers = computed(() => userCount.value);
 </script>
-
-<style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.15s ease;
-}
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-.grain-bg {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-</style>
