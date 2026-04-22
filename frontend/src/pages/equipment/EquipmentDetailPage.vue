@@ -315,7 +315,7 @@
                   v-for="(r, i) in maintenanceRecords"
                   :key="r.id"
                   class="border-b border-denim-700/10 hover:bg-denim-700/10 cursor-pointer"
-                  @click="router.push(`/work-orders/\${r._woId}\`)"
+                  @click="router.push(`/work-orders/${r._woId}`)"
                 >
                   <td class="px-3 py-2.5 text-denim-200/30">{{ i + 1 }}</td>
                   <td
@@ -513,7 +513,7 @@
                   v-for="(r, i) in activeWOs"
                   :key="r.id"
                   class="border-b border-denim-700/10 hover:bg-denim-700/10 cursor-pointer"
-                  @click="router.push('/work-orders/' + r._woId)"
+                  @click="router.push(`/work-orders/${r._woId}`)"
                 >
                   <td class="px-3 py-2.5 text-denim-200/30">{{ i + 1 }}</td>
                   <td class="px-3 py-2.5 font-mono text-caramel text-[10px]">
@@ -735,6 +735,18 @@ import {
   IconX,
   IconExternalLink,
 } from "@/components/icons";
+import { Code } from "lucide-vue-next";
+
+type TroubleRecord = {
+  id: string;
+  name: string;
+  date: string;
+  operation: string;
+  condition: string;
+  impact: string;
+  reporter: string;
+  status: string;
+};
 
 const router = useRouter();
 const route = useRoute();
@@ -743,7 +755,15 @@ const eqId = route.params.eqId as string;
 const activeTab = ref("maintenance");
 const showQR = ref(false);
 const qrCanvas = ref<HTMLCanvasElement | null>(null);
-const qrUrl = computed(() => `${window.location.origin}/eq/${eq.value.id}`);
+// Use VITE_PUBLIC_URL in production so QR codes point to the real domain
+// not localhost:5173. Falls back to window.location.origin for dev/staging.
+const PUBLIC_BASE =
+  import.meta.env.VITE_PUBLIC_URL?.replace(/\/$/, "") ||
+  (typeof window !== "undefined" ? window.location.origin : "");
+
+const qrUrl = computed(
+  () => `${PUBLIC_BASE}/eq/${eq.value.code || eq.value.id}`,
+);
 
 // Generate QR when modal opens
 watch(showQR, async (val) => {
@@ -849,6 +869,7 @@ const eq = ref({
   id: eqId || "",
   name: "",
   classification: "",
+  code: "",
   type: "",
   plant: "Essence Darmawangsa Apartment",
   section: "",
@@ -931,9 +952,7 @@ const maintenanceRecords = computed(() =>
       healthy: "Good",
     })),
 );
-const troubleRecords = ref([
-  // Real trouble records loaded from API via useTrouble composable
-]);
+const troubleRecords = ref<TroubleRecord[]>([]);
 // Activities for this equipment type — loaded from /activities API
 const eqActivities = ref<any[]>([]);
 const activeWOs = computed(() =>
@@ -955,7 +974,7 @@ const activeWOs = computed(() =>
           ? "Process"
           : "Waiting",
       technician: (w as any).assignedTo
-        ? (w as any).assignedTo.firstName + " " + (w as any).assignedTo.lastName
+        ? `${(w as any).assignedTo.firstName} ${(w as any).assignedTo.lastName}`
         : "Unassigned",
     })),
 );
