@@ -71,44 +71,86 @@
       </div>
     </div>
 
-    <!-- Activity table -->
+    <!-- Results table -->
     <template v-if="showTable">
       <div class="card p-0 overflow-hidden">
+        <!-- Context bar -->
         <div
           class="px-4 py-3 bg-denim-700/30 border-b border-denim-700/40 flex items-center justify-between flex-wrap gap-2"
         >
-          <div class="flex gap-6 text-xs">
+          <div class="flex gap-4 text-xs flex-wrap">
             <div>
-              <span class="text-denim-200/50">Equipment Type</span
-              ><span class="mx-2 text-denim-200/30">·</span
-              ><span class="text-white font-semibold">{{
+              <span class="text-denim-200/50">Equipment Type</span>
+              <span class="mx-2 text-denim-200/30">·</span>
+              <span class="text-white font-semibold">{{
                 appliedFilter.equipmentType
               }}</span>
             </div>
             <div>
-              <span class="text-denim-200/50">Classification</span
-              ><span class="mx-2 text-denim-200/30">·</span
-              ><span
+              <span class="text-denim-200/50">Classification</span>
+              <span class="mx-2 text-denim-200/30">·</span>
+              <span
                 class="font-semibold"
                 :class="classColor(appliedFilter.classification)"
                 >{{ appliedFilter.classification }}</span
               >
             </div>
             <div>
-              <span class="text-denim-200/50">Interval</span
-              ><span class="mx-2 text-denim-200/30">·</span
-              ><span class="text-white font-semibold">{{
+              <span class="text-denim-200/50">Interval</span>
+              <span class="mx-2 text-denim-200/30">·</span>
+              <span class="text-white font-semibold">{{
                 appliedFilter.interval
               }}</span>
             </div>
           </div>
-          <button
-            class="btn-primary text-xs px-3 py-1.5"
-            @click="showAddActivity = true"
-          >
-            + {{ t("common.add") }}
-          </button>
+          <div class="flex items-center gap-2">
+            <span
+              v-if="saving"
+              class="text-[11px] text-denim-200/40 flex items-center gap-1"
+            >
+              <svg
+                class="animate-spin w-3 h-3"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+              Saving...
+            </span>
+            <button class="btn-primary text-xs px-3 py-1.5" @click="openAdd">
+              + {{ t("common.add") }}
+            </button>
+          </div>
         </div>
+
+        <!-- Loading -->
+        <div
+          v-if="loading"
+          class="flex items-center gap-2 text-xs text-denim-200/40 px-4 py-3"
+        >
+          <svg
+            class="animate-spin w-3.5 h-3.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
+          {{ t("common.loading") }}
+        </div>
+
+        <!-- Error -->
+        <div
+          v-if="tmplError"
+          class="text-xs text-red-400 bg-red-500/10 px-4 py-2"
+        >
+          {{ tmplError }}
+        </div>
+
+        <!-- Table -->
         <div class="overflow-x-auto">
           <table class="w-full text-sm min-w-[780px]">
             <thead>
@@ -172,7 +214,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="(act, i) in filteredActivities"
+                v-for="(act, i) in items"
                 :key="act.id"
                 class="border-b border-denim-700/15 hover:bg-denim-700/15 transition-colors"
               >
@@ -194,10 +236,10 @@
                     class="text-xs px-2 py-0.5 rounded font-bold transition-colors"
                     :class="
                       act.status === 'Enable'
-                        ? 'bg-green-500/15 text-green-400'
+                        ? 'bg-green-500/15 text-green-400 hover:bg-green-500/25'
                         : 'bg-denim-600/40 text-denim-200/50'
                     "
-                    @click="toggleStatus(act)"
+                    @click="handleToggle(act)"
                   >
                     {{ act.status }}
                   </button>
@@ -226,7 +268,7 @@
                   <div class="flex items-center justify-center gap-1.5">
                     <button
                       class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-denim-600/60 text-denim-200/50 hover:text-white"
-                      @click="editActivity(act)"
+                      @click="openEdit(act)"
                     >
                       <svg
                         width="12"
@@ -246,7 +288,7 @@
                     </button>
                     <button
                       class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-500/15 text-denim-200/50 hover:text-red-400"
-                      @click="deleteActivity(act.id)"
+                      @click="handleDelete(act.id)"
                     >
                       <svg
                         width="12"
@@ -263,7 +305,7 @@
                   </div>
                 </td>
               </tr>
-              <tr v-if="!filteredActivities.length">
+              <tr v-if="!loading && !items.length">
                 <td colspan="11" class="px-4 py-12 text-center">
                   <div class="flex flex-col items-center gap-3">
                     <div
@@ -286,10 +328,10 @@
                     <p class="text-denim-200/40 text-sm">
                       {{ t("common.noData") }}
                     </p>
-                    <button
-                      class="btn-primary text-xs px-4"
-                      @click="showAddActivity = true"
-                    >
+                    <p class="text-denim-200/25 text-xs">
+                      No activities defined for this combination yet
+                    </p>
+                    <button class="btn-primary text-xs px-4" @click="openAdd">
                       + {{ t("common.add") }}
                     </button>
                   </div>
@@ -301,13 +343,13 @@
       </div>
     </template>
 
-    <!-- Add/Edit Modal -->
+    <!-- Add / Edit Modal -->
     <Teleport to="body">
       <Transition name="modal">
         <div
-          v-if="showAddActivity"
+          v-if="showModal"
           class="fixed inset-0 z-50 flex items-center justify-center p-4"
-          @click.self="closeActivityModal"
+          @click.self="closeModal"
         >
           <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
@@ -318,10 +360,7 @@
             >
               <div>
                 <h3 class="font-bold text-white">
-                  {{
-                    editingActivity ? t("common.edit") : t("common.add")
-                  }}
-                  Activity
+                  {{ editingId ? t("common.edit") : t("common.add") }} Activity
                 </h3>
                 <p class="text-xs text-denim-200/50 mt-0.5">
                   {{ appliedFilter.equipmentType }} ·
@@ -331,7 +370,7 @@
               </div>
               <button
                 class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-denim-200/50"
-                @click="closeActivityModal"
+                @click="closeModal"
               >
                 ✕
               </button>
@@ -342,7 +381,7 @@
                   >Activity Name <span class="text-red-400">*</span></label
                 >
                 <input
-                  v-model="actForm.name"
+                  v-model="form.name"
                   class="input"
                   placeholder="e.g. Cleaning Filter"
                 />
@@ -352,7 +391,7 @@
                   <label class="label"
                     >Type <span class="text-red-400">*</span></label
                   >
-                  <select v-model="actForm.type" class="input">
+                  <select v-model="form.type" class="input">
                     <option value="">Select</option>
                     <option v-for="tp in ACTIVITY_TYPES" :key="tp" :value="tp">
                       {{ tp }}
@@ -364,13 +403,13 @@
                     >Answer Type <span class="text-red-400">*</span></label
                   >
                   <select
-                    v-model="actForm.answerType"
+                    v-model="form.answerType"
                     class="input"
                     @change="
-                      actForm.unit = '';
-                      actForm.optimum = '';
-                      actForm.min = '';
-                      actForm.max = '';
+                      form.unit = '';
+                      form.optimum = '';
+                      form.min = '';
+                      form.max = '';
                     "
                   >
                     <option value="">Select</option>
@@ -383,40 +422,40 @@
               <div>
                 <label class="label">Unit</label>
                 <input
-                  v-model="actForm.unit"
+                  v-model="form.unit"
                   class="input"
                   :placeholder="
-                    actForm.answerType === 'Quantitative'
-                      ? 'e.g. °C, PSI'
+                    form.answerType === 'Quantitative'
+                      ? 'e.g. °C, PSI, kW'
                       : 'e.g. Bersih, Baik'
                   "
                 />
               </div>
               <div
-                v-if="actForm.answerType === 'Quantitative'"
+                v-if="form.answerType === 'Quantitative'"
                 class="grid grid-cols-3 gap-3"
               >
                 <div>
                   <label class="label">Optimum</label
                   ><input
-                    v-model="actForm.optimum"
+                    v-model="form.optimum"
                     class="input"
                     placeholder="0"
                   />
                 </div>
                 <div>
                   <label class="label">Min</label
-                  ><input v-model="actForm.min" class="input" placeholder="0" />
+                  ><input v-model="form.min" class="input" placeholder="0" />
                 </div>
                 <div>
                   <label class="label">Max</label
-                  ><input v-model="actForm.max" class="input" placeholder="0" />
+                  ><input v-model="form.max" class="input" placeholder="0" />
                 </div>
               </div>
               <div>
-                <label class="label">Sort</label>
+                <label class="label">Sort Number</label>
                 <input
-                  v-model.number="actForm.sort"
+                  v-model.number="form.sort"
                   type="number"
                   class="input w-28"
                   placeholder="1"
@@ -424,15 +463,25 @@
               </div>
             </div>
             <div class="px-6 pb-5 flex justify-end gap-2">
-              <button class="btn-secondary" @click="closeActivityModal">
+              <button class="btn-secondary" @click="closeModal">
                 {{ t("common.cancel") }}
               </button>
               <button
-                class="btn-primary"
-                @click="submitActivity"
-                :disabled="!actFormValid"
+                class="btn-primary gap-1.5"
+                @click="submitForm"
+                :disabled="!formValid || saving"
               >
-                {{ editingActivity ? t("common.save") : t("common.add") }}
+                <svg
+                  v-if="saving"
+                  class="animate-spin w-3.5 h-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+                {{ editingId ? t("common.save") : t("common.add") }}
               </button>
             </div>
           </div>
@@ -445,16 +494,25 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useI18n } from "@/i18n";
-import { useActivities } from "@/composables/useActivities";
+import { useActivityTemplates } from "@/composables/useActivityTemplates";
 import { useEquipment } from "@/composables/useEquipment";
 
 const { t } = useI18n();
-const { fetch: fetchActivities } = useActivities();
+
 const { items: eqItems, fetchAll } = useEquipment();
-onMounted(() => {
-  fetchActivities({ limit: 50 });
-  fetchAll();
-});
+const {
+  items,
+  loading,
+  saving,
+  error: tmplError,
+  fetch: fetchTemplates,
+  create,
+  update,
+  remove,
+  toggleStatus,
+} = useActivityTemplates();
+
+onMounted(() => fetchAll());
 
 const ACTIVITY_TYPES = [
   "Addition",
@@ -468,9 +526,11 @@ const ACTIVITY_TYPES = [
   "Visual",
 ];
 
-// Derive equipment types from real equipment data
+// Equipment types from real equipment data
 const equipmentTypes = computed(() => {
-  const cats = new Set(eqItems.value.map((e) => e.category).filter(Boolean));
+  const cats = new Set(
+    eqItems.value.map((e: any) => e.category).filter(Boolean),
+  );
   return Array.from(cats).sort() as string[];
 });
 
@@ -484,40 +544,31 @@ const appliedFilter = ref({
 const showTable = ref(false);
 const filterValid = computed(
   () =>
-    filter.value.equipmentType &&
-    filter.value.classification &&
-    filter.value.interval,
+    !!(
+      filter.value.equipmentType &&
+      filter.value.classification &&
+      filter.value.interval
+    ),
 );
 
 function applyFilter() {
   appliedFilter.value = { ...filter.value };
   showTable.value = true;
+  fetchTemplates({
+    equipmentType: filter.value.equipmentType,
+    classification: filter.value.classification,
+    interval: filter.value.interval,
+  });
 }
 function resetFilter() {
   filter.value = { equipmentType: "", classification: "", interval: "" };
   showTable.value = false;
 }
 
-// ── Local activity templates ───────────────────────────────────
-// These define PM checklists per equipment type/classification/interval.
-// In future: persisted to /activities API with a "template" flag.
-const allActivities = ref<any[]>([]);
-
-const filteredActivities = computed(() =>
-  allActivities.value
-    .filter(
-      (a) =>
-        a.equipmentType === appliedFilter.value.equipmentType &&
-        a.classification === appliedFilter.value.classification &&
-        a.interval === appliedFilter.value.interval,
-    )
-    .sort((a, b) => a.sort - b.sort),
-);
-
-// ── Activity Modal ─────────────────────────────────────────────
-const showAddActivity = ref(false);
-const editingActivity = ref<any>(null);
-const actForm = ref({
+// ── Modal ──────────────────────────────────────────────────────
+const showModal = ref(false);
+const editingId = ref<string | null>(null);
+const form = ref({
   name: "",
   type: "",
   answerType: "",
@@ -527,13 +578,28 @@ const actForm = ref({
   max: "",
   sort: 1,
 });
-const actFormValid = computed(
-  () => actForm.value.name && actForm.value.type && actForm.value.answerType,
+const formValid = computed(
+  () => !!(form.value.name && form.value.type && form.value.answerType),
 );
 
-function editActivity(act: any) {
-  editingActivity.value = act;
-  actForm.value = {
+function openAdd() {
+  editingId.value = null;
+  form.value = {
+    name: "",
+    type: "",
+    answerType: "",
+    unit: "",
+    optimum: "",
+    min: "",
+    max: "",
+    sort: items.value.length + 1,
+  };
+  showModal.value = true;
+}
+
+function openEdit(act: any) {
+  editingId.value = act.id;
+  form.value = {
     name: act.name,
     type: act.type,
     answerType: act.answerType,
@@ -543,12 +609,13 @@ function editActivity(act: any) {
     max: act.max,
     sort: act.sort,
   };
-  showAddActivity.value = true;
+  showModal.value = true;
 }
-function closeActivityModal() {
-  showAddActivity.value = false;
-  editingActivity.value = null;
-  actForm.value = {
+
+function closeModal() {
+  showModal.value = false;
+  editingId.value = null;
+  form.value = {
     name: "",
     type: "",
     answerType: "",
@@ -559,38 +626,35 @@ function closeActivityModal() {
     sort: 1,
   };
 }
-function submitActivity() {
-  if (!actFormValid.value) return;
-  if (editingActivity.value) {
-    const idx = allActivities.value.findIndex(
-      (a) => a.id === editingActivity.value.id,
-    );
-    if (idx >= 0)
-      allActivities.value[idx] = {
-        ...allActivities.value[idx],
-        ...actForm.value,
-      };
-  } else {
-    allActivities.value.push({
-      id: Date.now(),
-      equipmentType: appliedFilter.value.equipmentType,
-      classification: appliedFilter.value.classification,
-      interval: appliedFilter.value.interval,
-      ...actForm.value,
-      status: "Enable",
-    });
+
+async function submitForm() {
+  if (!formValid.value) return;
+  try {
+    if (editingId.value) {
+      await update(editingId.value, { ...form.value });
+    } else {
+      await create({
+        ...appliedFilter.value,
+        ...form.value,
+        status: "Enable",
+      } as any);
+    }
+    closeModal();
+  } catch {
+    /* error shown via tmplError */
   }
-  closeActivityModal();
-}
-function toggleStatus(act: any) {
-  act.status = act.status === "Enable" ? "Disable" : "Enable";
-}
-function deleteActivity(id: number) {
-  if (confirm("Delete this activity?"))
-    allActivities.value = allActivities.value.filter((a) => a.id !== id);
 }
 
-// ── Colors ─────────────────────────────────────────────────────
+async function handleToggle(act: any) {
+  await toggleStatus(act);
+}
+
+async function handleDelete(id: string) {
+  if (!confirm("Delete this activity?")) return;
+  await remove(id);
+}
+
+// ── Color helpers ──────────────────────────────────────────────
 function classColor(c: string) {
   return c === "Preventive"
     ? "text-blue-400"
