@@ -73,7 +73,7 @@
     <!-- Table -->
     <div class="card p-0 overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-sm min-w-[1000px]">
+        <table class="w-full text-sm min-w-[640px]">
           <thead>
             <tr class="border-b border-denim-700/40 bg-denim-900/40">
               <th
@@ -102,12 +102,12 @@
                 {{ t("trouble.operation") }}
               </th>
               <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
+                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide hidden md:table-cell"
               >
                 {{ t("trouble.reporter") }}
               </th>
               <th
-                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide"
+                class="px-3 py-3 text-left text-[11px] font-semibold text-denim-200/50 uppercase tracking-wide hidden sm:table-cell"
               >
                 WO
               </th>
@@ -179,7 +179,7 @@
                   >{{ tr.operation }}</span
                 >
               </td>
-              <td class="px-3 py-3">
+              <td class="px-3 py-3 hidden md:table-cell">
                 <div class="flex items-center gap-1.5">
                   <div
                     class="w-5 h-5 rounded-full bg-denim-600 flex items-center justify-center text-[9px] font-bold text-denim-200 shrink-0"
@@ -693,6 +693,115 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- ══════════════════════════════════════════════════════
+         SCHEDULE CORRECTIVE WO MODAL
+    ══════════════════════════════════════════════════════ -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="showScheduleWO"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+          @click.self="showScheduleWO = false"
+        >
+          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div
+            class="relative bg-denim-800 border border-caramel/20 rounded-2xl shadow-2xl w-full max-w-sm"
+          >
+            <div class="px-6 py-4 border-b border-denim-700/40">
+              <h3 class="font-bold text-white">Create Corrective WO</h3>
+              <p class="text-xs text-denim-200/50 mt-0.5 font-mono">
+                {{ scheduleWOTarget?.code || scheduleWOTarget?.id }}
+              </p>
+            </div>
+            <div class="px-6 py-4 space-y-3">
+              <!-- Trouble summary -->
+              <div class="bg-denim-900/50 rounded-xl p-3 text-xs space-y-1.5">
+                <div class="flex justify-between">
+                  <span class="text-denim-200/40">Equipment</span>
+                  <span class="text-white font-mono">{{
+                    scheduleWOTarget?.equipmentId
+                  }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-denim-200/40">Trouble</span>
+                  <span
+                    class="text-white font-medium max-w-[180px] text-right"
+                    >{{ scheduleWOTarget?.name }}</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-denim-200/40">Reporter</span>
+                  <span class="text-white">{{
+                    scheduleWOTarget?.reporter
+                  }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-denim-200/40">Days open</span>
+                  <span
+                    :class="
+                      (scheduleWOTarget?.age ?? 0) > 7
+                        ? 'text-red-400'
+                        : 'text-yellow-300'
+                    "
+                    class="font-bold"
+                  >
+                    {{ scheduleWOTarget?.age }} days
+                  </span>
+                </div>
+              </div>
+              <div>
+                <label class="label"
+                  >Target Date <span class="text-red-400">*</span></label
+                >
+                <input v-model="woDate" type="date" class="input" />
+              </div>
+              <div>
+                <label class="label">{{ t("workOrder.notes") }}</label>
+                <textarea
+                  v-model="woNote"
+                  class="input resize-none"
+                  rows="2"
+                  placeholder="Additional instructions for the technician..."
+                />
+              </div>
+              <div
+                class="bg-caramel/5 border border-caramel/15 rounded-lg px-3 py-2 text-xs text-caramel/80"
+              >
+                💡 Creates a Corrective WO (HIGH priority) linked to this
+                trouble report. The WO will appear in the Tasks list for
+                technician assignment.
+              </div>
+            </div>
+            <div class="px-6 pb-5 flex gap-2">
+              <button
+                class="btn-secondary flex-1 justify-center"
+                @click="showScheduleWO = false"
+              >
+                {{ t("common.cancel") }}
+              </button>
+              <button
+                class="btn-primary flex-1 justify-center gap-1.5"
+                @click="submitScheduleWO"
+                :disabled="!woDate || woSaving2"
+              >
+                <svg
+                  v-if="woSaving2"
+                  class="animate-spin w-3.5 h-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+                Create WO
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -713,6 +822,7 @@ import { useI18n } from "@/i18n";
 import { uploadImages } from "@/utils/upload";
 import { compressImage } from "@/utils/imageCompress";
 import type { TroubleStatus } from "@/types";
+import { useWorkOrders } from "@/composables/useWorkOrders";
 
 const { t } = useI18n();
 
@@ -735,6 +845,8 @@ type TroubleView = {
 };
 
 // ── Composables ────────────────────────────────────────────────
+const { create: createWO, saving: woSaving } = useWorkOrders();
+
 const {
   items: trItems,
   loading: trLoading,
@@ -945,13 +1057,67 @@ function openHistory(t: TroubleView) {
   showHistory.value = true;
 }
 
-// ── Schedule WO (stub — opens WO create flow) ─────────────────
+// ── Schedule Corrective WO from Trouble ───────────────────────
 const showScheduleWO = ref(false);
-function openScheduleWO(t: TroubleView) {
-  /* TODO: open WO create with trouble linked */
+const scheduleWOTarget = ref<TroubleView | null>(null);
+const woDate = ref("");
+const woNote = ref("");
+const woSaving2 = ref(false); // local saving state alias
+
+function openScheduleWO(tr: TroubleView) {
+  scheduleWOTarget.value = tr;
+  woDate.value = new Date().toISOString().slice(0, 10);
+  woNote.value = "";
+  showScheduleWO.value = true;
 }
+
+async function submitScheduleWO() {
+  const tr = scheduleWOTarget.value;
+  if (!tr || !woDate.value) return;
+  woSaving2.value = true;
+  try {
+    await createWO({
+      title: `Corrective WO — ${tr.name}`,
+      description:
+        `Corrective work order linked to Trouble Report ${tr.code || tr.id}.
+${woNote.value}`.trim(),
+      type: "CORRECTIVE" as any,
+      priority: "HIGH" as any,
+      // Get equipment UUID from trItems — tr.id is the trouble UUID,
+      // tr.equipmentId is the display code. Find the full API item.
+      equipmentId: trItems.value.find((t) => t.id === tr.id)
+        ? ((trItems.value.find((t) => t.id === tr.id) as any).equipment?.id ??
+          (trItems.value.find((t) => t.id === tr.id) as any).equipmentId)
+        : tr.id,
+      troubleReportId: tr.id,
+      dueDate: woDate.value ? new Date(woDate.value).toISOString() : undefined,
+    } as any);
+    showScheduleWO.value = false;
+    await fetchTrouble(); // refresh list to show new WO status
+    window.dispatchEvent(
+      new CustomEvent("enjive:toast", {
+        detail: {
+          message: "Corrective WO created and linked to trouble report.",
+          type: "success",
+        },
+      }),
+    );
+  } catch (e: any) {
+    window.dispatchEvent(
+      new CustomEvent("enjive:toast", {
+        detail: {
+          message: e?.message ?? "Failed to create WO.",
+          type: "error",
+        },
+      }),
+    );
+  } finally {
+    woSaving2.value = false;
+  }
+}
+
 function openEdit(t: TroubleView) {
-  /* TODO */
+  /* TODO: edit trouble description */
 }
 
 // ── Equipment search for create form ──────────────────────────
@@ -1047,11 +1213,12 @@ async function submitTrouble() {
     ]
       .filter(Boolean)
       .join("\n\n");
+    // Schema: title, description, severity, equipmentId (UUID only — backend infers reportedById from JWT)
     const created: any = await createTrouble({
       title: createForm.value.name,
       description,
       severity: createForm.value.severity as any,
-      equipmentId: createForm.value.selectedEquipment.id,
+      equipmentId: createForm.value.selectedEquipment.id, // UUID from search result
     });
     if (created?.id && photoFiles.value.length) {
       const base64s = await Promise.all(
