@@ -96,6 +96,23 @@ export function useUsers() {
     await api.delete(`/users/${id}`);
   }
 
+  // SUPER_ADMIN only — force reset without current password
+  async function resetPassword(id: string, newPassword: string) {
+    saving.value = true;
+    error.value = null;
+    try {
+      const res = await api.patch(`/users/${id}/reset-password`, {
+        newPassword,
+      });
+      return res.data.data;
+    } catch (e) {
+      error.value = extractError(e);
+      throw e;
+    } finally {
+      saving.value = false;
+    }
+  }
+
   return {
     items,
     item,
@@ -108,6 +125,7 @@ export function useUsers() {
     create,
     update,
     changePassword,
+    resetPassword,
     remove,
   };
 }

@@ -392,14 +392,10 @@
                     >Role <span class="text-red-400">*</span></label
                   >
                   <select v-model="form.role" class="input text-sm">
-                    <option value="">{{ t("common.all") }}</option>
-                    <option
-                      v-for="opt in ROLE_OPTIONS"
-                      :key="opt.role"
-                      :value="opt.role"
-                    >
-                      {{ opt.level }}
-                    </option>
+                    <option value="TECHNICIAN">Technician</option>
+                    <option value="MANAGER">Supervisor / Manager</option>
+                    <option value="ADMIN">Administrator</option>
+                    <option value="VIEWER">Viewer</option>
                   </select>
                 </div>
                 <div>
@@ -443,316 +439,9 @@
             </div>
           </div>
         </div>
-      </Transition> </Teleport
-    >er justify-between flex-wrap gap-3">
-    <div>
-      <h2 class="text-xl font-bold text-white tracking-tight">
-        {{ t("users.title") }}
-      </h2>
-      <div class="accent-bar mt-1.5" />
-    </div>
-    <button
-      v-if="isAdmin"
-      class="btn-primary text-xs gap-1.5 px-3"
-      @click="openCreate"
-    >
-      <IconPlus :size="13" /> {{ t("users.add") }}
-    </button>
+      </Transition>
+    </Teleport>
   </div>
-
-  <!-- Filters -->
-  <div class="card p-0 overflow-hidden">
-    <div
-      class="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-denim-700/30"
-    >
-      <div class="px-4 py-3">
-        <label
-          class="text-[10px] font-semibold text-denim-200/40 uppercase tracking-wide block mb-1.5"
-          >Site</label
-        >
-        <div class="flex gap-1 flex-wrap">
-          <button
-            v-for="s in SITES"
-            :key="s.key"
-            class="text-[11px] px-2.5 py-1 rounded-md border transition-all"
-            :class="
-              filters.site === s.key
-                ? 'bg-caramel/15 border-caramel/40 text-caramel font-semibold'
-                : 'border-denim-600/30 text-denim-200/40 hover:text-denim-200/70'
-            "
-            @click="filters.site = filters.site === s.key ? '' : s.key"
-          >
-            {{ s.label }}
-          </button>
-        </div>
-      </div>
-      <div class="px-4 py-3">
-        <label
-          class="text-[10px] font-semibold text-denim-200/40 uppercase tracking-wide block mb-1.5"
-          >{{ t("common.status") }}</label
-        >
-        <div class="flex gap-1 flex-wrap">
-          <button
-            v-for="s in STATUSES"
-            :key="s.key"
-            class="text-[11px] px-2.5 py-1 rounded-md border transition-all"
-            :class="
-              filters.status === s.key
-                ? s.activeClass
-                : 'border-denim-600/30 text-denim-200/40 hover:text-denim-200/70'
-            "
-            @click="filters.status = filters.status === s.key ? '' : s.key"
-          >
-            {{ s.label }}
-          </button>
-        </div>
-      </div>
-      <div class="px-4 py-3">
-        <label
-          class="text-[10px] font-semibold text-denim-200/40 uppercase tracking-wide block mb-1.5"
-          >Level</label
-        >
-        <div class="flex gap-1 flex-wrap">
-          <button
-            v-for="lv in LEVELS"
-            :key="lv"
-            class="text-[11px] px-2.5 py-1 rounded-md border transition-all"
-            :class="
-              filters.level === lv
-                ? 'bg-blue-500/15 border-blue-500/40 text-blue-300 font-semibold'
-                : 'border-denim-600/30 text-denim-200/40 hover:text-denim-200/70'
-            "
-            @click="filters.level = filters.level === lv ? '' : lv"
-          >
-            {{ lv }}
-          </button>
-        </div>
-      </div>
-    </div>
-    <div
-      class="flex items-center gap-3 px-4 py-2.5 border-t border-denim-700/20"
-    >
-      <div class="relative flex-1 max-w-xs">
-        <IconSearch
-          :size="13"
-          class="absolute left-3 top-1/2 -translate-y-1/2 text-denim-200/30"
-        />
-        <input
-          v-model="search"
-          class="input pl-8 py-1.5 text-xs"
-          :placeholder="t('common.search') + ' name, email...'"
-        />
-        <button
-          v-if="search"
-          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-denim-200/30 hover:text-white"
-          @click="search = ''"
-        >
-          <IconX :size="12" />
-        </button>
-      </div>
-      <span class="text-xs text-denim-200/30 ml-auto"
-        >{{ filteredUsers.length }} {{ t("users.title").toLowerCase() }}</span
-      >
-      <button
-        v-if="hasFilters"
-        class="text-[11px] text-caramel/70 hover:text-caramel"
-        @click="resetFilters"
-      >
-        {{ t("common.reset") }}
-      </button>
-    </div>
-  </div>
-
-  <!-- Loading / error -->
-  <div
-    v-if="userLoading"
-    class="flex items-center gap-2 text-xs text-denim-200/40 py-2"
-  >
-    <svg
-      class="animate-spin w-3.5 h-3.5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-    >
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-    {{ t("common.loading") }}
-  </div>
-  <div
-    v-if="userError"
-    class="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2"
-  >
-    {{ userError }}
-  </div>
-
-  <!-- Table -->
-  <div class="card p-0 overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full min-w-[720px]">
-        <thead>
-          <tr class="border-b border-denim-700/30 bg-denim-900/20">
-            <th
-              class="px-4 py-2.5 text-left text-[10px] font-semibold text-denim-200/35 uppercase tracking-wide w-10"
-            >
-              No
-            </th>
-            <th
-              class="px-4 py-2.5 text-left text-[10px] font-semibold text-denim-200/35 uppercase tracking-wide"
-            >
-              {{ t("common.name") }}
-            </th>
-            <th
-              class="px-4 py-2.5 text-left text-[10px] font-semibold text-denim-200/35 uppercase tracking-wide"
-            >
-              {{ t("users.email") }}
-            </th>
-            <th
-              class="px-4 py-2.5 text-left text-[10px] font-semibold text-denim-200/35 uppercase tracking-wide"
-            >
-              Site
-            </th>
-            <th
-              class="px-4 py-2.5 text-left text-[10px] font-semibold text-denim-200/35 uppercase tracking-wide"
-            >
-              {{ t("users.level") }}
-            </th>
-            <th
-              class="px-4 py-2.5 text-left text-[10px] font-semibold text-denim-200/35 uppercase tracking-wide"
-            >
-              {{ t("users.position") }}
-            </th>
-            <th
-              class="px-4 py-2.5 text-left text-[10px] font-semibold text-denim-200/35 uppercase tracking-wide w-20"
-            >
-              {{ t("common.status") }}
-            </th>
-            <th v-if="isAdmin" class="px-4 py-2.5 w-16" />
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(user, i) in pagedUsers"
-            :key="user.id"
-            class="border-b border-denim-700/10 hover:bg-denim-700/10 transition-colors group"
-          >
-            <td class="px-4 py-3 text-[11px] text-denim-200/25">
-              {{ (page - 1) * PER_PAGE + i + 1 }}
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-2.5">
-                <div
-                  class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
-                  :style="{ background: avatarColor(user.name) }"
-                >
-                  {{ initials(user.name) }}
-                </div>
-                <span class="text-xs font-medium text-white">{{
-                  user.name
-                }}</span>
-              </div>
-            </td>
-            <td class="px-4 py-3 text-[11px] text-denim-200/50">
-              {{ user.email }}
-            </td>
-            <td class="px-4 py-3">
-              <span
-                class="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                :class="
-                  user.site === 'EDA'
-                    ? 'bg-blue-500/15 text-blue-300'
-                    : user.site === 'NFP'
-                      ? 'bg-purple-500/15 text-purple-300'
-                      : 'bg-denim-600/40 text-denim-200/50'
-                "
-              >
-                {{ user.site }}
-              </span>
-            </td>
-            <td class="px-4 py-3">
-              <span
-                class="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                :class="levelColor(user.level)"
-                >{{ user.level }}</span
-              >
-            </td>
-            <td class="px-4 py-3 text-[11px] text-denim-200/50">
-              {{ user.role }}
-            </td>
-            <td class="px-4 py-3">
-              <span
-                class="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                :class="
-                  user.status === 'Active'
-                    ? 'bg-green-500/15 text-green-400'
-                    : 'bg-red-500/15 text-red-400'
-                "
-              >
-                {{ user.status }}
-              </span>
-            </td>
-            <td v-if="isAdmin" class="px-3 py-3">
-              <div
-                class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <button
-                  class="w-6 h-6 flex items-center justify-center rounded hover:bg-denim-600/50 text-denim-200/50 hover:text-white"
-                  @click="openEdit(user)"
-                >
-                  <IconPencil :size="12" />
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr v-if="!userLoading && !pagedUsers.length">
-            <td :colspan="isAdmin ? 8 : 7" class="px-4 py-16 text-center">
-              <div class="flex flex-col items-center gap-3">
-                <div
-                  class="w-14 h-14 rounded-2xl bg-denim-700/30 flex items-center justify-center"
-                >
-                  <IconSearch :size="24" class="text-denim-200/20" />
-                </div>
-                <p class="text-xs text-denim-200/30">
-                  {{ t("users.noUsers") }}
-                </p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div
-      v-if="totalPages > 1"
-      class="flex items-center justify-between px-4 py-3 border-t border-denim-700/20"
-    >
-      <p class="text-xs text-denim-200/30">
-        {{ (page - 1) * PER_PAGE + 1 }}–{{
-          Math.min(page * PER_PAGE, filteredUsers.length)
-        }}
-        of {{ filteredUsers.length }}
-      </p>
-      <div class="flex items-center gap-1">
-        <button
-          class="btn-secondary px-2.5 py-1 text-xs"
-          :disabled="page === 1"
-          @click="page--"
-        >
-          ← {{ t("common.prev") }}
-        </button>
-        <span class="text-xs text-denim-200/40 px-2"
-          >{{ page }}/{{ totalPages }}</span
-        >
-        <button
-          class="btn-secondary px-2.5 py-1 text-xs"
-          :disabled="page === totalPages"
-          @click="page++"
-        >
-          {{ t("common.next") }} →
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- Edit Modal (admin only — read-only for now, real CRUD via API) -->
   <Teleport to="body">
     <Transition name="modal">
@@ -785,18 +474,16 @@
                   >{{ t("common.name") }}
                   <span class="text-red-400">*</span></label
                 >
-                <div class="grid grid-cols-2 gap-3">
-                  <input
-                    v-model="form.firstName"
-                    class="input text-sm"
-                    placeholder="First name"
-                  />
-                  <input
-                    v-model="form.lastName"
-                    class="input text-sm"
-                    placeholder="Last name"
-                  />
-                </div>
+                <input
+                  v-model="form.firstName"
+                  class="input text-sm"
+                  :placeholder="t('common.name')"
+                />
+                <input
+                  v-model="form.lastName"
+                  class="input text-sm"
+                  :placeholder="t('common.name')"
+                />
               </div>
               <div>
                 <label class="label"
@@ -817,10 +504,8 @@
                   >Level <span class="text-red-400">*</span></label
                 >
                 <select v-model="form.role" class="input text-sm">
-                  <option value="ADMIN">Administrator</option>
-                  <option value="MANAGER">Supervisor</option>
-                  <option value="TECHNICIAN">Technician</option>
-                  <option value="VIEWER">Viewer</option>
+                  <option value="">{{ t("common.all") }}</option>
+                  <option v-for="lv in LEVELS" :key="lv">{{ lv }}</option>
                 </select>
               </div>
               <div>
@@ -844,6 +529,117 @@
       </div>
     </Transition>
   </Teleport>
+
+  <!-- ── Reset Password Modal (SUPER_ADMIN) ─────────────────── -->
+  <Teleport to="body">
+    <Transition name="modal">
+      <div
+        v-if="showResetPwd"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        @click.self="showResetPwd = false"
+      >
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <div
+          class="relative bg-denim-800 border border-orange-500/20 rounded-2xl shadow-2xl w-full max-w-sm"
+        >
+          <div class="px-6 py-5 border-b border-denim-700/40">
+            <h3 class="font-bold text-white text-sm">Reset Password</h3>
+            <p class="text-xs text-denim-200/50 mt-0.5">
+              {{ resetPwdTarget?.name }} · {{ resetPwdTarget?.email }}
+            </p>
+          </div>
+          <div class="px-6 py-4 space-y-3">
+            <div
+              v-if="resetPwdError"
+              class="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2"
+            >
+              {{ resetPwdError }}
+            </div>
+            <div
+              class="bg-orange-500/8 border border-orange-500/20 rounded-lg px-3 py-2 text-xs text-orange-300/80"
+            >
+              ⚠️ This will immediately replace the user's current password.
+              Share the new password securely.
+            </div>
+            <div>
+              <label class="label"
+                >New Password <span class="text-red-400">*</span></label
+              >
+              <div class="relative">
+                <input
+                  v-model="resetPwdNew"
+                  :type="resetPwdShow ? 'text' : 'password'"
+                  class="input pr-10"
+                  placeholder="Min 8 characters"
+                />
+                <button
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-denim-200/40 hover:text-white"
+                  @click="resetPwdShow = !resetPwdShow"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <template v-if="resetPwdShow">
+                      <path
+                        d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"
+                      />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </template>
+
+                    <template v-else>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </template>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="label"
+                >Confirm Password <span class="text-red-400">*</span></label
+              >
+              <input
+                v-model="resetPwdConfirm"
+                type="password"
+                class="input"
+                placeholder="Repeat new password"
+              />
+            </div>
+          </div>
+          <div class="px-6 pb-5 flex gap-2">
+            <button
+              class="btn-secondary flex-1 justify-center"
+              @click="showResetPwd = false"
+            >
+              {{ t("common.cancel") }}
+            </button>
+            <button
+              class="btn-danger flex-1 justify-center gap-1.5"
+              @click="submitResetPwd"
+              :disabled="!resetPwdNew || !resetPwdConfirm || resetPwdSaving"
+            >
+              <svg
+                v-if="resetPwdSaving"
+                class="animate-spin w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+              Reset Password
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -858,6 +654,7 @@ const auth = useAuthStore();
 const isAdmin = computed(() =>
   ["ADMIN", "SUPER_ADMIN"].includes(auth.userRole ?? ""),
 );
+const isSuperAdmin = computed(() => auth.userRole === "SUPER_ADMIN");
 
 const {
   items: apiUsers,
@@ -867,6 +664,7 @@ const {
   fetch: fetchUsers,
   create: createUser,
   update: updateUser,
+  resetPassword,
 } = useUsers();
 onMounted(() => fetchUsers());
 
@@ -947,19 +745,17 @@ const ROLE_TO_LEVEL: Record<string, string> = {
   VIEWER: "Viewer",
 };
 
-const LEVEL_TO_ROLE: Record<string, string> = {
-  Administrator: "ADMIN",
-  Supervisor: "MANAGER",
-  Technician: "TECHNICIAN",
-  Viewer: "VIEWER",
+type UserRow = {
+  id: string;
+  name: string;
+  email: string;
+  site: string;
+  level: string;
+  role: string;
+  status: string;
 };
 
-const ROLE_OPTIONS = Object.entries(ROLE_TO_LEVEL).map(([role, level]) => ({
-  role,
-  level,
-}));
-
-const users = computed(() =>
+const users = computed<UserRow[]>(() =>
   apiUsers.value.map((u) => ({
     id: u.id,
     name: `${u.firstName} ${u.lastName}`,
@@ -1049,6 +845,53 @@ function openCreate() {
   };
   showModal.value = true;
 }
+// ── Reset Password (SUPER_ADMIN only) ─────────────────────────
+const showResetPwd = ref(false);
+const resetPwdTarget = ref<any>(null);
+const resetPwdNew = ref("");
+const resetPwdConfirm = ref("");
+const resetPwdSaving = ref(false);
+const resetPwdError = ref<string | null>(null);
+const resetPwdShow = ref(false);
+
+function openResetPwd(user: any) {
+  resetPwdTarget.value = user;
+  resetPwdNew.value = "";
+  resetPwdConfirm.value = "";
+  resetPwdError.value = null;
+  resetPwdShow.value = false;
+  showResetPwd.value = true;
+}
+
+async function submitResetPwd() {
+  if (resetPwdNew.value.length < 8) {
+    resetPwdError.value = "Password must be at least 8 characters";
+    return;
+  }
+  if (resetPwdNew.value !== resetPwdConfirm.value) {
+    resetPwdError.value = "Passwords do not match";
+    return;
+  }
+  resetPwdSaving.value = true;
+  resetPwdError.value = null;
+  try {
+    await resetPassword(resetPwdTarget.value.id, resetPwdNew.value);
+    showResetPwd.value = false;
+    window.dispatchEvent(
+      new CustomEvent("enjive:toast", {
+        detail: {
+          message: `Password reset for ${resetPwdTarget.value.name}`,
+          type: "success",
+        },
+      }),
+    );
+  } catch (e: any) {
+    resetPwdError.value = e?.message ?? "Failed to reset password";
+  } finally {
+    resetPwdSaving.value = false;
+  }
+}
+
 function openEdit(user: any) {
   editMode.value = true;
   editingId.value = user.id;
